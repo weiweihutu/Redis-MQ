@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package com.ibiz.redis.mq.domain;
+
+option java_package = "com.ibiz.redis.mq.domain";
+option java_outer_classname = "SuperUserProto";
+
+message SuperUser {
+  optional int32 level = 1;
+  optional bool admin = 2;
+  repeated string list= 3;
+}
+
+

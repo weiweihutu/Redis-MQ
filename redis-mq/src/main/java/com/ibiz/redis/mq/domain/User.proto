@@ -1,0 +1,19 @@
+syntax = "proto2";  //使用proto2
+import "DefineMap.proto"; //导入其他proto
+import "SuperUser.proto";
+package com.ibiz.redis.mq.domain;
+
+option java_package = "com.ibiz.redis.mq.domain"; //生成目标类包名
+option java_outer_classname = "UserProto";  ////生成目标类类名
+//生成的主要实体类,继承了com.google.protobuf.GeneratedMessage
+message User {
+  //optional 代表属性可选
+  optional int32 age = 1;
+  optional double price = 2;
+  optional float amount = 3;
+  //repeated 代表集合
+  repeated DefineMap map = 4;
+  optional SuperUser superUser = 5;
+  optional string name = 6;
+}
+

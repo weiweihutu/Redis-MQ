@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package com.ibiz.redis.mq.domain;
+
+option java_package = "com.ibiz.redis.mq.domain";
+option java_outer_classname = "DefineMapProto";
+
+message DefineMap {
+  optional string key = 1;
+  optional string value = 2;
+}

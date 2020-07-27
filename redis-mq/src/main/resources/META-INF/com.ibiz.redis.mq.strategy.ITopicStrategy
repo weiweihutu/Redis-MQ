@@ -1,0 +1,3 @@
+MORE_FIRST=com.ibiz.redis.mq.strategy.MoreFirstStrategy
+LESS_FIRST=com.ibiz.redis.mq.strategy.LessFirstStrategy
+RANDOM_FIRST=com.ibiz.redis.mq.strategy.RandomFirstStrategy

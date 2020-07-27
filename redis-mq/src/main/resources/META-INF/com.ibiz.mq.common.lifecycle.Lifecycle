@@ -1,0 +1,5 @@
+redis=com.ibiz.redis.mq.lifecycle.RedisLifecycle
+
+redis1 = com.ibiz.redis.mq.lifecycle.RedisLifecycle #aaaa
+
+##b = com.ibiz.redis.mq.lifecycle.RedisLifecycle

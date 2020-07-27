@@ -1,0 +1,4 @@
+protobuf=com.ibiz.redis.mq.serializ.ProtobufSerializerHandler
+gson=com.ibiz.redis.mq.serializ.GsonSerializerHandler
+jdk=com.ibiz.redis.mq.serializ.JdkSerializerHandler
+jackson=com.ibiz.redis.mq.serializ.JacksonSerializerHandler
