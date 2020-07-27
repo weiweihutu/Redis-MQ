@@ -6,17 +6,22 @@ import com.ibiz.mq.common.config.MQConfig;
 import com.ibiz.mq.common.consumer.IConsumer;
 import com.ibiz.mq.common.message.Message;
 import com.ibiz.mq.common.producer.IProducer;
+import com.ibiz.redis.mq.MQBootstrap;
+import com.ibiz.redis.mq.config.Config;
+import com.ibiz.redis.mq.context.SpringContextHolder;
 import com.ibiz.redis.mq.domain.UserProto;
+import com.ibiz.redis.mq.parse.ConfigParse;
 import com.ibiz.redis.mq.thread.DefineThreadPoolExecutor;
 import com.ibiz.redis.mq.thread.WorkThreadPoolManager;
 import org.junit.Test;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.IntStream;
 
 class RedisMqApplicationTests {
     public final static CountDownLatch latch = new CountDownLatch(1);
-    private void await() {
+    private static void await() {
         try {
             latch.await();
         } catch (Exception e) {
@@ -24,14 +29,19 @@ class RedisMqApplicationTests {
         }
     }
 
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext cxt = new AnnotationConfigApplicationContext(Config.class, ConfigParse.class, MQBootstrap.class, ProducerDemo.class, SpringContextHolder.class);
+        cxt.refresh();
+        //producer(1);
+        //consume(10);
+        //await();
+    }
     @Test
     void contextLoads() throws NoSuchFieldException, IllegalAccessException {
-        producer(1);
-        //consume(10);
-        await();
+
     }
 
-    public void consume(int size) throws NoSuchFieldException, IllegalAccessException {
+    public  void consume(int size) throws NoSuchFieldException, IllegalAccessException {
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(IConsumer.class);
         ConsumerConfig consumerConfig = MQConfig.CONSUMER_CONFIG.get("test");
         IConsumer consumer = (IConsumer) extensionLoader.getInstance(consumerConfig.getProtocol());
@@ -42,7 +52,7 @@ class RedisMqApplicationTests {
         });
     }
 
-    private void producer(int size) {
+    private static void producer(int size) {
         ConsumerConfig consumerConfig = MQConfig.CONSUMER_CONFIG.get("test");
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(IProducer.class);
         IProducer producer = (IProducer) extensionLoader.getInstance(consumerConfig.getProtocol());
