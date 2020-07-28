@@ -27,6 +27,13 @@ public class InstanceHolder {
         return LifecycleHolder.LIFECYCLE_HOLDER;
     }
 
+    /**
+     * 销毁已启动BOSS线程,停止WORK线程。清理BOSS线程和WORK线程池
+     */
+    public void deploy() {
+        INSTANCE_LIFECYCLE.values().stream().forEach(Lifecycle::deploy);
+    }
+
     private static class LifecycleHolder {
         private static InstanceHolder LIFECYCLE_HOLDER = new InstanceHolder();
     }

@@ -30,17 +30,23 @@ public class DefineThreadPoolExecutor extends ThreadPoolExecutor {
     public void decrement() {
         count.decrementAndGet();
     }
-
+    /**
+     * 根据消费者id创建线程池,如果已经创建则直接返回,反之新创建一个
+     * @instanceId redis实例id
+     * @param consumerId    消费者id
+     * @param corePoolSize  核心线程数
+     * @param maximumPoolSize   最大线程数
+     * @param size 队列最大容量
+     * @return  ThreadPoolExecutor
+     */
     public DefineThreadPoolExecutor(int corePoolSize, int maximumPoolSize, int size, String consumerId, long sleep) {
         super(corePoolSize, maximumPoolSize, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<>(size), new BossThreadFactory(consumerId), new DefineRejectHandler());
         restrict = maximumPoolSize + size;
         this.sleep = sleep;
     }
-
     public long getSleep() {
         return sleep;
     }
-
     /**消费一个任务后提交数量减1*/
     @Override
     protected void afterExecute(Runnable r, Throwable t) {

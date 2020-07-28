@@ -2,6 +2,8 @@ package com.ibiz.redis.mq.parse;
 import com.ibiz.mq.common.config.ConsumerConfig;
 import com.ibiz.mq.common.config.InstanceConfig;
 import com.ibiz.mq.common.config.MQConfig;
+import com.ibiz.mq.common.constant.ErrorCode;
+import com.ibiz.mq.common.util.ValidateUtil;
 import com.ibiz.redis.mq.constant.Constant;
 import com.ibiz.redis.mq.context.SpringContextHolder;
 import com.ibiz.redis.mq.factory.ConfigFactory;
@@ -10,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.*;
 import org.springframework.core.io.support.ResourcePropertySource;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @auther yc
@@ -29,12 +33,12 @@ public class ConfigParse {
      * 解析配置项,组装InstanceConfig/ConsumerConfig
      */
     public void parse() {
-        //redis-mq-config.consumer={instanceId:"m1",filter:"wms-service.importTaskConsumerHandler",corePoolSize:5,maximumPoolSize:10,workQueueSize:100,ratio:"7:3"}
         parseInstance();
         parseConsumer();
     }
 
     private void parseConsumer() {
+        Set<String> consumerIds = new HashSet<>();
         MQConfig.MQ_CONFIG.forEach((k, v) -> {
             int keyIdx;
             if ((keyIdx = k.indexOf(Constant.CONSUMER_KEY)) > -1) {
@@ -45,14 +49,14 @@ public class ConfigParse {
                 consumerConfig.init((String)v);
                 consumerConfig.setProtocol(protocol);
                 consumerConfig.setId(id);
-                MQConfig.CONSUMER_CONFIG.putIfAbsent(id, consumerConfig);
+                ValidateUtil.validate(id, (o) -> !consumerIds.add(o), ErrorCode.COMMON_CODE, "repeat consumerId :" + id);
+                MQConfig.CONSUMER_CONFIG.put(id, consumerConfig);
             }
         });
         logger.info("consumer config :{}", MQConfig.CONSUMER_CONFIG);
     }
 
     private void parseInstance() {
-        //redis-mq-config-instance.m1={hostname:"127.0.0.1",port:6379,timeout:3000,usePool:true,dbIndex:0,maxTotal:500,maxIdle:20,timeBetweenEvictionRunsMillis:30000,minEvictableIdleTimeMillis:30000,maxWaitMillis:5000,testOnCreate:true,testOnBorrow:false,testOnReturn:true,testWhileIdle:true}
         MQConfig.MQ_CONFIG.forEach((k, v) -> {
             int keyIdx;
             if ((keyIdx = k.indexOf(Constant.INSTANCE_KEY)) > -1) {
@@ -63,8 +67,7 @@ public class ConfigParse {
                 instanceConfig.init((String)v);
                 instanceConfig.setProtocol(protocol);
                 instanceConfig.setInstanceId(instanceId);
-                System.out.println("instanceConfig:" + instanceConfig);
-                MQConfig.INSTANCE_CONFIG.putIfAbsent(instanceId, instanceConfig);
+                MQConfig.INSTANCE_CONFIG.put(instanceId, instanceConfig);
             }
         });
         logger.info("instance config :{}", MQConfig.INSTANCE_CONFIG);

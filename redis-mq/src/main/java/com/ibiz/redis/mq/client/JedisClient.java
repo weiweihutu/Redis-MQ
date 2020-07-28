@@ -7,10 +7,8 @@ import com.ibiz.redis.mq.constant.Constant;
 import com.ibiz.redis.mq.script.ScriptManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.*;
+import redis.clients.util.Pool;
 
 import java.util.Arrays;
 import java.util.List;
@@ -68,7 +66,21 @@ public class JedisClient {
     }
 
     public final static class JedisPoolCreator {
-        public static JedisPool getInstance(RedisConfig instanceConfig) {
+        public static Pool<Jedis> getInstance(RedisConfig instanceConfig) {
+            Pool<Jedis> pool = create(instanceConfig);
+            try {
+                ping(pool);
+            } catch (Exception e) {
+                throw new RuntimeException("redis ping failure hostname :" + instanceConfig.getHostname() + ":" + instanceConfig.getPort() +
+                        " , username:" + instanceConfig.getUserName() + "/" + instanceConfig.getPassword() + ", dbIndex:" + instanceConfig.getDbIndex());
+            }
+            return pool;
+        }
+
+        private static Pool<Jedis> create(RedisConfig instanceConfig) {
+            if (instanceConfig.isSentinel()) {
+                return new JedisSentinelPool(instanceConfig.getSentinelMasterName(), instanceConfig.getSentinels());
+            }
             JedisPoolConfig poolConfig = new JedisPoolConfig();
             poolConfig.setBlockWhenExhausted(instanceConfig.isBlockWhenExhausted());
             poolConfig.setJmxEnabled(instanceConfig.isJmxEnabled());
@@ -83,17 +95,10 @@ public class JedisClient {
             poolConfig.setTestOnReturn(instanceConfig.isTestOnReturn());
             poolConfig.setTestWhileIdle(instanceConfig.isTestWhileIdle());
             poolConfig.setTimeBetweenEvictionRunsMillis(instanceConfig.getTimeBetweenEvictionRunsMillis());
-            JedisPool pool = new JedisPool(poolConfig, instanceConfig.getHostname(), instanceConfig.getPort(), instanceConfig.getTimeout(), instanceConfig.getPassword());
-            try {
-                ping(pool);
-            } catch (Exception e) {
-                throw new RuntimeException("redis ping failure hostname :" + instanceConfig.getHostname() + ":" + instanceConfig.getPort() +
-                        " , username:" + instanceConfig.getUserName() + "/" + instanceConfig.getPassword() + ", dbIndex:" + instanceConfig.getDbIndex());
-            }
-            return pool;
+            return new JedisPool(poolConfig, instanceConfig.getHostname(), instanceConfig.getPort(), instanceConfig.getTimeout(), instanceConfig.getPassword());
         }
 
-        static void ping(JedisPool pool) {
+        static void ping(Pool<Jedis> pool) {
             Jedis jedis = pool.getResource();
             String ping = jedis.ping();
             if (!"PONG".equalsIgnoreCase(ping)) {

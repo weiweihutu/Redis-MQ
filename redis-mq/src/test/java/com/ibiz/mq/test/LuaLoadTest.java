@@ -1,4 +1,4 @@
-package com.ibiz.redis.mq.test;
+package com.ibiz.mq.test;
 
 import com.ibiz.redis.mq.constant.Constant;
 import com.ibiz.redis.mq.script.ScriptManager;

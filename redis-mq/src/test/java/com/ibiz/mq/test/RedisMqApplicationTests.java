@@ -1,4 +1,4 @@
-package com.ibiz.redis.mq.test;
+package com.ibiz.mq.test;
 
 import com.ibiz.mq.common.ExtensionLoader;
 import com.ibiz.mq.common.config.ConsumerConfig;
@@ -6,16 +6,17 @@ import com.ibiz.mq.common.config.MQConfig;
 import com.ibiz.mq.common.consumer.IConsumer;
 import com.ibiz.mq.common.message.Message;
 import com.ibiz.mq.common.producer.IProducer;
-import com.ibiz.redis.mq.MQBootstrap;
 import com.ibiz.redis.mq.config.Config;
 import com.ibiz.redis.mq.context.SpringContextHolder;
 import com.ibiz.redis.mq.domain.UserProto;
-import com.ibiz.redis.mq.parse.ConfigParse;
+import com.ibiz.redis.mq.producer.ProducerDemo;
 import com.ibiz.redis.mq.thread.DefineThreadPoolExecutor;
 import com.ibiz.redis.mq.thread.WorkThreadPoolManager;
-import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.IntStream;
 
@@ -29,16 +30,19 @@ class RedisMqApplicationTests {
         }
     }
 
+
     public static void main(String[] args) {
-        AnnotationConfigApplicationContext cxt = new AnnotationConfigApplicationContext(Config.class, ConfigParse.class, MQBootstrap.class, ProducerDemo.class, SpringContextHolder.class);
-        cxt.refresh();
+        AnnotationConfigApplicationContext cxt = new AnnotationConfigApplicationContext(Config.class, SpringContextHolder.class);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                producer(10000);
+            }
+        }, 10000);
+        //cxt.refresh();
         //producer(1);
         //consume(10);
         //await();
-    }
-    @Test
-    void contextLoads() throws NoSuchFieldException, IllegalAccessException {
-
     }
 
     public  void consume(int size) throws NoSuchFieldException, IllegalAccessException {
@@ -59,12 +63,8 @@ class RedisMqApplicationTests {
         UserProto.User user = UserFactory.getUser();
         Message message = new Message();
         message.setBody(user);
-        /*IntStream.range(0, size).forEach(i -> {
-            new Thread(() -> {
-                producer.publisher(consumerConfig.getInstanceId(), consumerConfig.getBean(), "TEST", consumerConfig.getSerializer(), message);
-            }).start();
-        });*/
-        DefineThreadPoolExecutor pte = WorkThreadPoolManager.getInstance().createExecutor("TEST", consumerConfig.getCorePoolSize(), consumerConfig.getMaximumPoolSize(), consumerConfig.getQueueSize(), consumerConfig.getSleep());
+        ProducerDemo.start = new Date();
+        DefineThreadPoolExecutor pte = WorkThreadPoolManager.getInstance().createExecutor(consumerConfig);
         IntStream.range(0, size).forEach(tpc -> {
             pte.increment();
             try {

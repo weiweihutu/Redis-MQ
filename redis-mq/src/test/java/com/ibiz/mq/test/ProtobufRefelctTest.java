@@ -1,4 +1,4 @@
-package com.ibiz.redis.mq.test;
+package com.ibiz.mq.test;
 
 import com.ibiz.mq.common.message.Message;
 import com.ibiz.redis.mq.domain.CopyUserProto;

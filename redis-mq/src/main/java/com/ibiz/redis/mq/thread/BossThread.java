@@ -30,10 +30,8 @@ public class BossThread implements Runnable {
             try {
                 logger.info("BOSS THREAD RUN ................");
                 //消费者id
-                final String id = consumerConfig.getBean();
-                DefineThreadPoolExecutor pte = WorkThreadPoolManager.getInstance().createExecutor(id, consumerConfig.getCorePoolSize(), consumerConfig.getMaximumPoolSize(), consumerConfig.getQueueSize(), consumerConfig.getSleep());
-                //TODOWork线程池注册到BOSS线程，产生关联
-                //BossThreadManager.getInstance().registry(instanceId, pte);
+                final String id = consumerConfig.getId();
+                DefineThreadPoolExecutor pte = WorkThreadPoolManager.getInstance().createExecutor(consumerConfig);
                 Lifecycle lifecycle = InstanceHolder.getInstanceHolder().getLifecycle(instanceId);
                 //此处可以使用抽象方法扩展其他mq类型,让子类去执行
                 //由于现在只有redis,直接强转

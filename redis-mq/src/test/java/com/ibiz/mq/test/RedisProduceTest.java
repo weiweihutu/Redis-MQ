@@ -1,4 +1,4 @@
-package com.ibiz.redis.mq.test;
+package com.ibiz.mq.test;
 
 import com.ibiz.mq.common.ExtensionLoader;
 import com.ibiz.mq.common.config.ConsumerConfig;
@@ -11,8 +11,10 @@ import com.ibiz.redis.mq.context.InstanceHolder;
 import com.ibiz.redis.mq.factory.LifecycleFactory;
 import com.ibiz.redis.mq.lifecycle.RedisLifecycle;
 import org.junit.Test;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Tuple;
+import redis.clients.util.Pool;
 
 import java.lang.reflect.Field;
 import java.util.Set;
@@ -41,7 +43,7 @@ public class RedisProduceTest {
         RedisLifecycle lcc = (RedisLifecycle)LifecycleFactory.getNewInstance(instanceConfig);
         lcc.setInstanceConfig(instanceConfig);
         InstanceHolder.getInstanceHolder().registry(instanceConfig.getInstanceId(), lcc);
-        JedisPool jedisPool = JedisClient.JedisPoolCreator.getInstance(instanceConfig);
+        Pool<Jedis> jedisPool = JedisClient.JedisPoolCreator.getInstance(instanceConfig);
         Field jedisPoolField = RedisLifecycle.class.getDeclaredField("holder");
         //RedisLifecycle.Holder改为public static
         RedisLifecycle.Holder holder = new RedisLifecycle.Holder(jedisPool);

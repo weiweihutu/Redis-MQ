@@ -1,11 +1,10 @@
 package com.ibiz.redis.mq.thread;
 
+import com.ibiz.mq.common.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -17,63 +16,126 @@ import java.util.concurrent.locks.ReentrantLock;
 public class BossThreadManager {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     Lock lock = new ReentrantLock();
+    /**
+     * consumerId 消费者id 与 BossThread
+     * key : consumerId
+     * value : BossThread (Runnable)
+     */
+    private final Map<String, BossThread> BOSS_RUNNABLE_MANAGER = new ConcurrentHashMap<>(64);
+    /**
+     * consumerId 消费者id 与 Thread
+     * key : consumerId
+     * value : Thread
+     */
+    private final Map<String, Thread> BOSS_THREAD_MANAGER =  new ConcurrentHashMap<>(64);
+    /**
+     * redis实例对应所有consumerId
+     * instanceId - List&lt;consumerId&gt;
+     */
+    private final Map<String, Set<String>> INSTANCE_CONSUMER_MANAGER = new ConcurrentHashMap<>();
 
-    private Map<String, BossThread> BOSS_RUNNABLE_MANAGER = new ConcurrentHashMap<>(64);
-    private Map<String, Thread> BOSS_THREAD_MANAGER =  new ConcurrentHashMap<>(64);
-    //TODO服务治理功能使用，根据修改的实例对线程池做管理
-    private Map<String, List<DefineThreadPoolExecutor>> INSTANCE_WORK_THREAD_POOL_MANAGER = new ConcurrentHashMap<>(64);
+    /**
+     * 注册实例与boss线程
+     * @param instanceId redis实例id
+     * @param bossThread boss线程
+     */
+    public void registry(String instanceId, String consumerId, BossThread bossThread) {
+        lock.lock();
+        try {
+            BOSS_RUNNABLE_MANAGER.put(consumerId, bossThread);
+            BOSS_THREAD_MANAGER.put(consumerId, new Thread(bossThread));
+            Set<String> consumerIds = INSTANCE_CONSUMER_MANAGER.getOrDefault(instanceId, new HashSet<>());
+            consumerIds.add(consumerId);
+            INSTANCE_CONSUMER_MANAGER.put(instanceId, consumerIds);
+        } finally {
+            lock.unlock();
+        }
 
-    public void registry(String instanceId, BossThread bossThread) {
-        BOSS_RUNNABLE_MANAGER.putIfAbsent(instanceId, bossThread);
-        BOSS_THREAD_MANAGER.put(instanceId, new Thread(bossThread));
-    }
-
-    public void registry(String instanceId, DefineThreadPoolExecutor workThreadPool) {
-        List<DefineThreadPoolExecutor> executors = INSTANCE_WORK_THREAD_POOL_MANAGER.getOrDefault(instanceId, new ArrayList<>());
-        executors.add(workThreadPool);
-        INSTANCE_WORK_THREAD_POOL_MANAGER.put(instanceId, executors);
     }
 
     /**
-     * 启动所有BOSS线程
+     * 启动指定redis实例BOSS线程
      */
-    public void start() {
+    public void start(String instanceId) {
         lock.lock();
         try {
-            BOSS_THREAD_MANAGER.forEach((k, v) -> {
-                v.start();
-                logger.info("MQ instanceId :{} Boss Thread start", k);
+            INSTANCE_CONSUMER_MANAGER.forEach((k, v) -> {
+                if (StringUtil.isBlank(instanceId) || StringUtil.equals(k, instanceId)) {
+                    //启动redis实例下所有BOSS线程
+                    v.forEach(cid -> BOSS_THREAD_MANAGER.get(cid).start());
+                    logger.info("MQ instanceId :{} Boss Thread start", k);
+                }
             });
         } finally {
             lock.unlock();
         }
     }
 
+    /**
+     * 开启所有所有BOSS线程
+     */
+    public void start() {
+        start(null);
+    }
+
+    /**
+     * 销毁instanceId 下的 consumerId 线程池
+     * 如果consumerId 为null ,销毁instanceId下的BOSS线程，已经WORK线程池
+     * 如果consumerId 为null , consumerId 为null 销毁所有BOSS线程和WORK线程池
+     * @param instanceId
+     * @param consumerId
+     */
+    public void deploy(String instanceId, String consumerId) {
+        lock.lock();
+        try {
+            INSTANCE_CONSUMER_MANAGER.forEach((k, v) -> {
+                if (StringUtil.isBlank(instanceId) || StringUtil.equals(k, instanceId)) {
+                    //暂停redis实例下所有BOSS线程
+                    v.forEach(cid -> BOSS_RUNNABLE_MANAGER.get(cid).shutdown());
+                    logger.info("MQ instanceId :{} Boss Thread start", k);
+                }
+                if (StringUtil.isNotBlank(consumerId)) {
+                    //销毁WORK线程池
+                    WorkThreadPoolManager.getInstance().deploy(consumerId);
+                }
+            });
+            clear(instanceId);
+        } finally {
+            lock.unlock();
+        }
+    }
+    /**
+     * 销毁指定redis实例线程
+     * @param instanceId
+     */
+    public void deploy(String instanceId) {
+        deploy(instanceId, null);
+    }
     /**
      * 销毁所有BOSS线程
      */
     public void deploy() {
-        lock.lock();
-        try {
-            BOSS_RUNNABLE_MANAGER.forEach((k, v) -> {
-                //把运行状态关闭，关闭BOSS线程
-                v.shutdown();
-            });
-            clear();
-        } finally {
-            lock.unlock();
+        deploy(null);
+    }
+
+    public void clear() {
+        clear(null);
+    }
+
+    public void clear(String instanceId) {
+        INSTANCE_CONSUMER_MANAGER.forEach((k, v) -> {
+            if (StringUtil.isBlank(instanceId) || StringUtil.equals(k, instanceId)) {
+                v.forEach(cid -> {
+                    BOSS_RUNNABLE_MANAGER.remove(cid);
+                    BOSS_THREAD_MANAGER.remove(cid);
+                });
+            }
+        });
+        if (StringUtil.isNotBlank(instanceId)) {
+            INSTANCE_CONSUMER_MANAGER.remove(instanceId);
+            return;
         }
-    }
-
-    private void clear() {
-        BOSS_RUNNABLE_MANAGER.clear();
-        BOSS_THREAD_MANAGER.clear();
-        INSTANCE_WORK_THREAD_POOL_MANAGER.clear();
-    }
-
-    public void remove(String instanceId) {
-        BOSS_RUNNABLE_MANAGER.remove(instanceId);
-        BOSS_THREAD_MANAGER.remove(instanceId);
+        INSTANCE_CONSUMER_MANAGER.clear();
     }
 
     private BossThreadManager() {}

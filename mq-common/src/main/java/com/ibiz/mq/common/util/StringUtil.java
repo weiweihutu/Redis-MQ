@@ -11,6 +11,12 @@ public class StringUtil {
         return str.getBytes(StandardCharsets.UTF_8);
     }
 
+    public static boolean equals(String s1, String s2) {
+        return s1 == null && s2 == null ? true :
+                s2 == null && s1 == null ? true :
+                        s1.trim().equals(s2.trim());
+    }
+
     public static boolean isBlank(String str) {
         return !isNotBlank(str);
     }
