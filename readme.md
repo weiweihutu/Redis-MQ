@@ -1,6 +1,88 @@
 框架思考
 1.如何提高吞吐量？
+
+一个消费者对应一个BOSS线程，一个BOSS线程管理一个WORK线程池，WORK线程池中处理每一个具体的消费任务
+
+```java
+public class BossThreadManager {	//BOSS线程管理
+    //key : consumerId   value : BossThread (Runnable)
+    private final Map<String, BossThread> BOSS_RUNNABLE_MANAGER = new ConcurrentHashMap<>(64);
+    //key : consumerId  value : Thread
+    private final Map<String, Thread> BOSS_THREAD_MANAGER =  new ConcurrentHashMap<>(64);
+    //key : instanceId  value : List<consumerId>
+    private final Map<String, Set<String>> INSTANCE_CONSUMER_MANAGER = new ConcurrentHashMap<>();
+    }
+```
+
+```java
+public class WorkThreadPoolManager {	//WORK线程池管理
+    //key : consumerId value : DefineThreadPoolExecutor
+    private final Map<String, DefineThreadPoolExecutor> WORK_THREAD_POOL_MANAGER = new ConcurrentHashMap<>();
+}
+```
+
+自定义线程池
+
+```java
+public class DefineThreadPoolExecutor extends ThreadPoolExecutor {
+    /**当前线程池总提交数量
+     * BOSS线程需要通过 count来控制到redis取待消费任务
+     * WORK线程需要通过 count 和 restrict 判断任务是否能入队列*/
+    private final AtomicInteger count = new AtomicInteger(0);
+    /**当线程池和队列都满了,线程休眠时间*/
+    private long sleep;
+    /**当前线程池最大容量 最大线程数 + 队列容量*/
+    private final int restrict;
+    /**当前线程池总提交数量
+     * BOSS线程需要通过 count来控制到redis取待消费任务
+     * WORK线程需要通过 count 和 restrict 判断任务是否能入队列*/
+    public boolean nextSubmit() {
+        return count.get() < restrict;
+    }
+    public void increment() {
+        count.getAndIncrement();
+    }
+    public void decrement() {
+        count.decrementAndGet();
+    }
+    /**
+     * 根据消费者id创建线程池,如果已经创建则直接返回,反之新创建一个
+     * @instanceId redis实例id
+     * @param consumerId    消费者id
+     * @param corePoolSize  核心线程数
+     * @param maximumPoolSize   最大线程数
+     * @param size 队列最大容量
+     * @return  ThreadPoolExecutor
+     */
+    public DefineThreadPoolExecutor(int corePoolSize, int maximumPoolSize, int size, String consumerId, long sleep) {
+        super(corePoolSize, maximumPoolSize, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<>(size), new BossThreadFactory(consumerId), new DefineRejectHandler());
+        restrict = maximumPoolSize + size;
+        this.sleep = sleep;
+    }
+    public long getSleep() {
+        return sleep;
+    }
+    /**消费一个任务后提交数量减1*/
+    @Override
+    protected void afterExecute(Runnable r, Throwable t) {
+        decrement();
+    }
+}
+```
+
+第10000次消费 cost :26545
+
+```
+corePoolSize:5,maximumPoolSize:10,queueSize:100
+```
+
 2.是否可以支持动态服务治理功能？
+
+支持redis实例动态治理，例如修改redis hostname,port或其他配置
+
+
+
+支持动态修改消费者配置，例如修改序列化方式等
 
 BOSS线程从redis读取待消费topic数远大于WORK线程消费能力时，如何处理大批任务读进内存问题？
 
