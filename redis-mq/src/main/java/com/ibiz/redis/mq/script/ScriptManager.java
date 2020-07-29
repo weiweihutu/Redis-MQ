@@ -4,6 +4,7 @@ import com.google.common.io.CharStreams;
 import com.ibiz.redis.mq.constant.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import redis.clients.jedis.Jedis;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -56,13 +57,14 @@ public class ScriptManager {
     public String loadScript(String scriptName) {
         String script = SCRIPT_CACHE.get(scriptName);
         if (null == script || "".equals(script.trim())) {
+            ClassPathResource cpr = new ClassPathResource(Constant.LUA_SCRIPT_ROOT_PATH + scriptName);
             //重新加载
-            InputStream luaStream = this.getClass().getClassLoader().getResourceAsStream(Constant.LUA_SCRIPT_ROOT_PATH + scriptName);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(luaStream, StandardCharsets.UTF_8));
             try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(cpr.getInputStream(), StandardCharsets.UTF_8));
                 script = CharStreams.toString(reader);
                 SCRIPT_CACHE.put(scriptName, script);
             } catch (IOException e) {
+                logger.error("load script " + Constant.LUA_SCRIPT_ROOT_PATH + scriptName + " error");
                 throw new RuntimeException("load script " + Constant.LUA_SCRIPT_ROOT_PATH + scriptName + " error");
             }
         }
