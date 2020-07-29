@@ -11,7 +11,7 @@ public class Constant {
     public static final String REFRESH_INTERVAL = "mq.refresh.interval";
     //默认使用redisMQ
     public static final String AUTO_PROTOCOL = "redis";
-    public static final String LUA_SCRIPT_ROOT_PATH = "META-INF" + System.getProperty("file.separator") + "lua" + System.getProperty("file.separator");
+    public static final String LUA_SCRIPT_ROOT_PATH = "config" + System.getProperty("file.separator") + "lua" + System.getProperty("file.separator");
     public static final String LUA_PUBLISH = "publish.lua";
     public static final String LUA_CONSUME = "consume.lua";
     /**
