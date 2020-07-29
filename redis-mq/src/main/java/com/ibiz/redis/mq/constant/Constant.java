@@ -7,8 +7,6 @@ package com.ibiz.redis.mq.constant;
 public class Constant {
     public static final String INSTANCE_KEY = "mq-config-instance";
     public static final String CONSUMER_KEY = "mq-config-consumer";
-    public static final String STARTUP_DELAY = "mq.startup.delay";
-    public static final String REFRESH_INTERVAL = "mq.refresh.interval";
     //默认使用redisMQ
     public static final String AUTO_PROTOCOL = "redis";
     public static final String LUA_SCRIPT_ROOT_PATH = "config" + System.getProperty("file.separator") + "lua" + System.getProperty("file.separator");
