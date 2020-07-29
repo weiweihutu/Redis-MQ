@@ -7,6 +7,7 @@ import com.ibiz.mq.common.util.StringUtil;
 import com.ibiz.mq.common.util.ValidateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -109,35 +110,32 @@ public class ExtensionLoader<T> {
     private void loadClass() {
         Map<String, Optional<Class<?>>> classCache;
         try {
-            Enumeration<URL> urls = this.getClass().getClassLoader().getResources(Constant.SPI_CONFIG_ROOT_PATH + type.getName());
+            ClassPathResource cpr = new ClassPathResource(Constant.SPI_CONFIG_ROOT_PATH + type.getName());
             classCache = new HashMap<>();
-            while (urls.hasMoreElements()) {
-                URL url = urls.nextElement();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), Constant.ENCODING));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    line = line.trim();
-                    int anIdx;
-                    line = (anIdx = line.indexOf(Constant.ANNOTATION_FLAG)) == 0 ? "" :
-                            anIdx <= 0 ? line.trim() :
-                            line.substring(0, anIdx);
-                    String[] nameToClass = line.split("=");
-                    if (!"".equals(line) && nameToClass.length != 2) {
-                        throw new RuntimeException("加载 type:" + type.getName() + " 异常, 配置项错误：" + line);
-                    }
-                    if ("".equals(line)) {
-                        continue;
-                    }
-                    boolean existName = classCache.containsKey(nameToClass[0].trim());
-                    if (existName) {
-                        throw new RuntimeException("name :" + nameToClass[0] + " repeat ...");
-                    }
-                    Class<?> clazz = ClassUtil.getClass(nameToClass[1].trim());
-                    classCache.put(nameToClass[0].trim(), Optional.ofNullable(clazz));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(cpr.getInputStream(), Constant.ENCODING));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                int anIdx;
+                line = (anIdx = line.indexOf(Constant.ANNOTATION_FLAG)) == 0 ? "" :
+                        anIdx <= 0 ? line.trim() :
+                                line.substring(0, anIdx);
+                String[] nameToClass = line.split("=");
+                if (!"".equals(line) && nameToClass.length != 2) {
+                    throw new RuntimeException("加载 type:" + type.getName() + " 异常, 配置项错误：" + line);
                 }
+                if ("".equals(line)) {
+                    continue;
+                }
+                boolean existName = classCache.containsKey(nameToClass[0].trim());
+                if (existName) {
+                    throw new RuntimeException("name :" + nameToClass[0] + " repeat ...");
+                }
+                Class<?> clazz = ClassUtil.getClass(nameToClass[1].trim());
+                classCache.put(nameToClass[0].trim(), Optional.ofNullable(clazz));
             }
         } catch (Exception e) {
-            logger.error("loadClass error", e);
+            logger.error("loadClass " + Constant.SPI_CONFIG_ROOT_PATH + type.getName() + " error", e);
             throw new RuntimeException(e);
         }
         logger.info("load class :{} instance class :{}", type.getName(), classCache.values().stream().filter(Optional::isPresent).map(o -> o.get().getName()).collect(Collectors.joining(",")));
