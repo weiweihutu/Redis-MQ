@@ -17,6 +17,10 @@ public class StringUtil {
                         s1.trim().equals(s2.trim());
     }
 
+    public static boolean equalsIgnoreCase(String s1, String s2) {
+        return equals(s1, s2) || s1.equalsIgnoreCase(s2);
+    }
+
     public static boolean isBlank(String str) {
         return !isNotBlank(str);
     }

@@ -18,4 +18,10 @@ public class RuntimeError {
         }
         throw new ServiceException(error, e);
     }
+    public static void creator(String error) {
+        if (StringUtil.isNotBlank(error)) {
+            logger.error(error);
+        }
+        throw new ServiceException(ErrorCode.COMMON_CODE.getCode(), error);
+    }
 }
