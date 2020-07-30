@@ -12,7 +12,6 @@ import org.springframework.beans.BeanUtils;
 public class ConsumerConfig {
     //mq 类型
     private String protocol;
-    //{instanceId:"m1",filter:"wms-service.importTaskConsumerHandler",corePoolSize:5,maximumPoolSize:10,workQueueSize:100}
     private String instanceId;
     private String bean;
     private int corePoolSize;

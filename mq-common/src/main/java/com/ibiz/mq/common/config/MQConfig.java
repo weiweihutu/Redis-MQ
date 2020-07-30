@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MQConfig {
     /**延迟加载*/
-    public static long DEPLOY = 500;
+    public static long DEPLOY = 1000;
     /**刷新配置间隔时间*/
     public static long REFRESH_INTERVAL = 600000;
     /**所有mq的配置*/

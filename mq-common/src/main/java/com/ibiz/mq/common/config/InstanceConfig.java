@@ -10,7 +10,6 @@ import org.springframework.beans.BeanUtils;
  * @date 2020/7/1612:31
  */
 public class InstanceConfig {
-    //{type:"redis",hostname:"127.0.0.1",port:6379,timeout:3000,usePool:true,dbIndex:0,maxTotal:500,maxIdle:20,timeBetweenEvictionRunsMillis:30000,minEvictableIdleTimeMillis:30000,maxWaitMillis:5000,testOnCreate:true,testOnBorrow:false,testOnReturn:true,testWhileIdle:true}
     //mq 类型
     protected String protocol;
     protected String instanceId;
