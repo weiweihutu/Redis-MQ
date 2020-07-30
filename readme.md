@@ -1,5 +1,18 @@
-框架思考
-1.如何提高吞吐量？
+### 如何提高吞吐量？
+
+Redis-MQ采用线程池管理机制，在针对每个不同业务点的特殊性，例如业务需要频繁IO,或者调用第三方服务，亦或是业务很简单。配置不同配置的线程池。
+
+## Redis-MQ介绍
+
+与第三方中间件消息通讯会占用部分系统资源，并且第三方会启动很多额外的功能，例如启动守护线程监听MQ的消费情况等，这些都会占用系统资源。因此写一套能够支持MQ机制的组件
+
+支持配置多个redis实例 ， 配置多个消费者。
+
+一个redis实例可以对应多个消费者。
+
+一个消费者也可以对应到不同redis实例。
+
+![redis-MQ](image\redis-MQ.png)
 
 一个消费者对应一个BOSS线程，一个BOSS线程管理一个WORK线程池，WORK线程池中处理每一个具体的消费任务
 
@@ -11,7 +24,7 @@ public class BossThreadManager {	//BOSS线程管理
     private final Map<String, Thread> BOSS_THREAD_MANAGER =  new ConcurrentHashMap<>(64);
     //key : instanceId  value : List<consumerId>
     private final Map<String, Set<String>> INSTANCE_CONSUMER_MANAGER = new ConcurrentHashMap<>();
-    }
+}
 ```
 
 ```java
@@ -70,15 +83,13 @@ public class DefineThreadPoolExecutor extends ThreadPoolExecutor {
 }
 ```
 
-第10000次消费 cost :26545
+第10000次消费 cost :12440
 
 ```
 corePoolSize:5,maximumPoolSize:10,queueSize:100
 ```
 
-2.是否可以支持动态服务治理功能？
-
-支持redis实例动态治理，例如修改redis hostname,port或其他配置
+MQ 10000次耗时 131779
 
 
 
@@ -166,3 +177,184 @@ jackson Object size 960 * (1000 * 1000) 序列化大小 456000000 , 序列化cos
 
 
 
+## MQ测试
+
+测试思路
+
+分布式服务中，不同服务请求能够确保生产者产生的每个任务都被消费者消费，
+
+这里使用2台机器部署6个服务，每个服务均可以作为生产者又可作为消费者。
+
+使用3张表，然后分别对三张表进行新增数据操作。
+
+### 准备
+
+1、设计三张表，三张表表名不同，结构相同
+
+```sql
+CREATE TABLE user_info
+(`user_id` VARCHAR(64) PRIMARY KEY,
+`user_name` VARCHAR(30),
+`age` INT(3),
+`country` VARCHAR(30),
+`city` VARCHAR(30),
+`created_time` DATETIME,
+`updated_time` DATETIME
+)
+```
+
+部署2台机 192.168.131.101 ， 192.168.131.100
+
+分别在2台上部署3个服务相同，端口不同的服务，port : [22221, 22222, 22223 ]
+
+在192.168.131.101 部署
+
+>  redis-mq-test-22221.jar
+
+>  redis-mq-test-22222.jar
+
+>  redis-mq-test-22223.jar
+
+在192.168.131.100部署相同服务
+
+>  redis-mq-test-22221.jar
+
+>  redis-mq-test-22222.jar
+
+>  redis-mq-test-22223.jar
+
+看下产生任务代码
+
+```java
+@RestController
+public class RedisMqController  {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    @Autowired
+    private IUserService userService;
+    /**
+     * 生产任务
+     * @param size  任务数量
+     * @param table 操作的表名
+     */
+    @GetMapping("/push")
+    public void pushQueue(@RequestParam(name = "size") Integer size, @RequestParam(name = "table") String table) {
+        producer(size, table);
+    }
+
+    @GetMapping("/count")
+    public int count(@RequestParam(name = "table") String table) {
+        return userService.count(table);
+    }
+
+    private void producer(int size, String table) {
+        //userInfoConsumerHandler 消费者id ,在配置文件中配置
+        ConsumerConfig consumerConfig = MQConfig.CONSUMER_CONFIG.get("userInfoConsumerHandler");
+        ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(IProducer.class);
+        IProducer producer = (IProducer) extensionLoader.getInstance(consumerConfig.getProtocol());
+        IntStream.range(0, size).forEach(tpc -> {
+            Message message = new Message();
+            UserInfo userInfo = new UserInfo();
+            userInfo.setAge(tpc % 10 + 20);
+            userInfo.setCity("深圳" + tpc);
+            userInfo.setCountry("CN");
+            userInfo.setTable(table);
+            userInfo.setUserName("测试" + tpc);
+            message.setBody(userInfo);
+            producer.publisher(consumerConfig.getInstanceId(), consumerConfig.getBean(), "TEST", consumerConfig.getSerializer(), message);
+        });
+    }
+}
+```
+
+### 启动服务
+
+#### 1、相同实例，不同消费者
+
+启动6个服务，请求服务：
+
+这里只分别请求192.168.131.101机器的服务，192.168.131.100 单纯用作消费者消费任务
+
+> http://192.168.131.101:22222/push?size=10000&table=user_info
+
+> http://192.168.131.101:22222/push?size=10000&table=user_info_2
+
+> http://192.168.131.101:22222/push?size=10000&table=user_info_3
+
+> http://192.168.131.101:22221/push?size=10000&table=user_info
+
+> http://192.168.131.101:22221/push?size=10000&table=user_info_2
+
+> http://192.168.131.101:22221/push?size=10000&table=user_info_3
+
+> http://192.168.131.101:22223/push?size=10000&table=user_info_3
+
+![deploy](image\deploy.png)
+
+![deploy](image\deploy_2.png)给user_info表产生20000个任务 ， user_info_2产生20000个任务，user_info_3产生30000个任务.结果如下
+
+```sql
+tb            total  
+-----------  --------
+user_info       20000
+user_info_2     20000
+user_info_3     30000
+```
+
+2、不同实例，相同消费者
+
+产生1000个任务，在不同实例中分别创建了1000个任务，最终产生2000个消费任务
+
+```sql
+tb            total  
+-----------  --------
+user_info        2000
+```
+
+
+
+### 测试结果
+
+2台机6个服务，在分布式服务下，同一时刻产生70000个任务。每台机的服务均能够正常消费。
+
+CPU使用情况
+
+![pid](image\pid.png)
+
+![pid](image\cpu.png)
+
+redis 任务消费情况
+
+```shell
+127.0.0.1:6379> keys *       ## 所有key
+1) "REDIS_MQ_EVERY_PRODUCE_POP_QUEUE_QUANTITY"	## 每个任务消费者消费数量 sortedSet
+2) "REDIS_MQ_EVERY_PRODUCE_PULL_QUEUE_QUANTITY" ## 每个任务生产数量 sortedSet
+3) "REDIS_MQ_TOTAL_PRODUCE_POP_QUEUE_QUANTITY"  ## redis总任务数量 
+4) "REDIS_MQ_TOTAL_PRODUCE_PULL_QUEUE_QUANTITY" ## redis总消费数量 
+5) "REDIS_MQ_userInfoConsumerHandler"	## 任务待消费topic  sortedSet
+6) "REDIS_MQ_userInfoConsumerHandler_TEST_CLAZZ"  ## 任务实体数据类型
+#####实际上在运行时，还有下面这个key,用来保存任务实体数据,用的redis List列表存储。当生产任务时push,消费时pop
+7) "REDIS_MQ_userInfoConsumerHandler_TEST"
+127.0.0.1:6379> get REDIS_MQ_TOTAL_PRODUCE_POP_QUEUE_QUANTITY
+"519389"
+127.0.0.1:6379> get REDIS_MQ_TOTAL_PRODUCE_POP_QUEUE_QUANTITY
+"519389"
+127.0.0.1:6379> zrange REDIS_MQ_userInfoConsumerHandler 0 -1 withscores
+1) "REDIS_MQ_userInfoConsumerHandler_TEST"
+2) "0"
+127.0.0.1:6379> zrange REDIS_MQ_EVERY_PRODUCE_PULL_QUEUE_QUANTITY 0 -1 withscore
+s
+1) "REDIS_MQ_producer.demo_TEST"
+2) "245374"
+3) "REDIS_MQ_userInfoConsumerHandler_TEST"
+4) "274015"
+127.0.0.1:6379> zrange REDIS_MQ_EVERY_PRODUCE_POP_QUEUE_QUANTITY 0 -1 withscores
+
+1) "REDIS_MQ_producer.demo_TEST"
+2) "245374"
+3) "REDIS_MQ_userInfoConsumerHandler_TEST"
+4) "274015"
+```
+
+TODO 是否可以支持动态服务治理功能？
+
+redis实例动态治理，例如修改redis hostname,port或其他配置
