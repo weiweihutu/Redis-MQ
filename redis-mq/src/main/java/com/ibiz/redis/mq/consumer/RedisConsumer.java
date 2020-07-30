@@ -8,6 +8,7 @@ import com.ibiz.mq.common.exception.ServiceException;
 import com.ibiz.mq.common.message.Message;
 import com.ibiz.mq.common.serializ.ISerializerHandler;
 import com.ibiz.mq.common.util.ClassUtil;
+import com.ibiz.mq.common.util.RuntimeError;
 import com.ibiz.redis.mq.constant.Constant;
 import com.ibiz.redis.mq.context.InstanceHolder;
 import com.ibiz.redis.mq.context.SpringContextHolder;
@@ -34,21 +35,20 @@ public class RedisConsumer implements IConsumer {
         }
         Object handler = SpringContextHolder.getBean(bean);
         if (null == handler || !Invocation.class.isAssignableFrom(handler.getClass())) {
-            return;
+            RuntimeError.creator("instanceId :" + instanceId +" bean :" + bean + " not instance of Invocation");
         }
         Invocation invoke = (Invocation)handler;
         bean = Constant.REDIS_KEY_PREFIX + bean;
         String classNameKey = topic + REDIS_KEY_MESSAGE_CLAZZ_SUFFIX;
-        Class messageBodyClass;
+        Class messageBodyClass = null;
         String className = null;
         try {
             className = JedisClient.get(lifecycle.getJedis(), classNameKey);
             messageBodyClass = ClassUtil.getClass(className);
         } catch (Exception e) {
-            logger.error("instanceId :{} rpop produce classNameKey :{} , className:{} class for className error", instanceId, classNameKey, className);
-            throw new ServiceException(ErrorCode.COMMON_CODE, e);
+            RuntimeError.creator("instanceId :" + instanceId +" rpop produce classNameKey :" + classNameKey +" , className:" + className + " class for className error", e);
         }
-        byte[] result = JedisClient.evalsha(bean, lifecycle.getJedis(), toByteUtf8(bean), toByteUtf8(topic), toByteUtf8(REDIS_MQ_EVERY_PRODUCE_POP_QUEUE_QUANTITY), toByteUtf8(REDIS_MQ_TOTAL_PRODUCE_POP_QUEUE_QUANTITY), toByteUtf8(REDIS_MQ_TOTAL_PRODUCE_POP_QUANTITY_TIME));
+        byte[] result = JedisClient.evalsha(lifecycle.getJedis(), toByteUtf8(bean), toByteUtf8(topic), toByteUtf8(REDIS_MQ_EVERY_PRODUCE_POP_QUEUE_QUANTITY), toByteUtf8(REDIS_MQ_TOTAL_PRODUCE_POP_QUEUE_QUANTITY), toByteUtf8(REDIS_MQ_TOTAL_PRODUCE_POP_QUANTITY_TIME));
         byte[] buf = result;
         if (null == buf) {
             logger.debug("instanceId :{} rpop produce topic :{} data is null", instanceId, topic);
@@ -61,7 +61,7 @@ public class RedisConsumer implements IConsumer {
         try {
             invoke.invoke(message);
         } catch (Exception e) {
-            logger.error("instanceId: " + instanceId +" consumer business :" + topic + " throw exception", e);
+            RuntimeError.creator("instanceId: " + instanceId +" consumer business :" + topic + " throw exception", e);
         }
     }
 

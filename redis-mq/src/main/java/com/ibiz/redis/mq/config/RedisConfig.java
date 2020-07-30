@@ -76,9 +76,7 @@ public class RedisConfig extends InstanceConfig {
     private String sentinelMasterName = "";
 
     /**
-     * 192.168.137.128:26379 <br/>
-     * 192.168.137.128:26380 <br/>
-     * 192.168.137.128:26381 <br/>
+     * 192.168.131.101:6379 ,192.168.131.102:6379, 192.168.131.103:6379
      * sentinels
      */
     private Set<String> sentinels = new HashSet<>(0);
@@ -249,110 +247,5 @@ public class RedisConfig extends InstanceConfig {
 
     public void setSentinels(Set<String> sentinels) {
         this.sentinels = sentinels;
-    }
-
-    public static RedisConfig fromMap(@SuppressWarnings("rawtypes") Map map) {
-        RedisConfig config = new RedisConfig();
-        Object username = map.get("username");
-        if (null != username && username instanceof String) {
-            config.setUserName((String) username);
-        }
-        Object password = map.get("password");
-        if (null != password && password instanceof String) {
-            config.setPassword((String) password);
-        }
-        Object hostname = map.get("hostname");
-        if (null != hostname && hostname instanceof String) {
-            config.setHostname((String) hostname);
-        }
-        Object port = map.get("port");
-        if (null != port && port instanceof Integer) {
-            config.setPort((Integer) port);
-        }
-        Object usePool = map.get("usePool");
-        if (null != usePool && usePool instanceof Boolean) {
-            config.setUsePool((Boolean) usePool);
-        }
-        Object dbIndex = map.get("dbIndex");
-        if (null != dbIndex && dbIndex instanceof Integer) {
-            config.setDbIndex((Integer) dbIndex);
-        }
-        Object maxTotal = map.get("maxTotal");
-        if (null != maxTotal && maxTotal instanceof Integer) {
-            config.setMaxTotal((Integer) maxTotal);
-        }
-        Object maxIdle = map.get("maxIdle");
-        if (null != maxIdle && maxIdle instanceof Integer) {
-            config.setMaxIdle((Integer) maxIdle);
-        }
-        Object maxWaitMillis = map.get("maxWaitMillis");
-        if (null != maxWaitMillis && maxWaitMillis instanceof Integer) {
-            config.setMaxWaitMillis((Integer) maxWaitMillis);
-        }
-        Object lifo = map.get("lifo");
-        if (null != lifo && lifo instanceof Boolean) {
-            config.setLifo((Boolean) lifo);
-        }
-        Object blockWhenExhausted = map.get("blockWhenExhausted");
-        if (null != blockWhenExhausted && blockWhenExhausted instanceof Boolean) {
-            config.setBlockWhenExhausted((Boolean) blockWhenExhausted);
-        }
-        Object testOnCreate = map.get("testOnCreate");
-        if (null != testOnCreate && testOnCreate instanceof Boolean) {
-            config.setTestOnCreate((Boolean) testOnCreate);
-        }
-        Object testOnBorrow = map.get("testOnBorrow");
-        if (null != testOnBorrow && testOnBorrow instanceof Boolean) {
-            config.setTestOnBorrow((Boolean) testOnBorrow);
-        }
-        Object testOnReturn = map.get("testOnReturn");
-        if (null != testOnReturn && testOnReturn instanceof Boolean) {
-            config.setTestOnReturn((Boolean) testOnReturn);
-        }
-        Object testWhileIdle = map.get("testWhileIdle");
-        if (null != testWhileIdle && testWhileIdle instanceof Boolean) {
-            config.setTestWhileIdle((Boolean) testWhileIdle);
-        }
-        Object timeBetweenEvictionRunsMillis = map.get("timeBetweenEvictionRunsMillis");
-        if (null != timeBetweenEvictionRunsMillis && timeBetweenEvictionRunsMillis instanceof Integer) {
-            config.setTimeBetweenEvictionRunsMillis((Integer) timeBetweenEvictionRunsMillis);
-        }
-        Object minEvictableIdleTimeMillis = map.get("minEvictableIdleTimeMillis");
-        if (null != minEvictableIdleTimeMillis && minEvictableIdleTimeMillis instanceof Integer) {
-            config.setMinEvictableIdleTimeMillis((Integer) minEvictableIdleTimeMillis);
-        }
-
-        // 设置哨兵模式
-        Object isSentinel = map.get("isSentinel");
-        if (null != isSentinel) {
-            if (isSentinel instanceof String) {
-                String isSentinelStr = String.valueOf(isSentinel);
-                if (isSentinelStr.equalsIgnoreCase("true")) {
-                    config.setSentinel(Boolean.TRUE);
-                } else {
-                    config.setSentinel(Boolean.FALSE);
-                }
-            } else if (isSentinel instanceof Boolean) {
-                config.setSentinel((Boolean) isSentinel);
-            }
-        }
-        // 只有设置了:isSentinel才会开启配置功能
-        if (config.isSentinel()) {
-            // sentinelMasterName
-            Object sentinelMasterName = map.get("sentinelMasterName");
-            if (null != sentinelMasterName && sentinelMasterName instanceof String) {
-                config.setSentinelMasterName((String) sentinelMasterName);
-            }
-            // sentinels
-            Object sentinels = map.get("sentinels");
-            if (null != sentinels && sentinels instanceof String) {
-                String[] sentinelsArray = ((String) sentinels).split(",");
-                if (null != sentinelsArray) {
-                    Set<String> sentinelSet = new HashSet<>(Arrays.asList(sentinelsArray));
-                    config.setSentinels(sentinelSet);
-                }
-            }
-        }
-        return config;
     }
 }

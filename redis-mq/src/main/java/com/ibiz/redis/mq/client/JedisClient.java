@@ -1,7 +1,10 @@
 package com.ibiz.redis.mq.client;
 
+import com.ibiz.mq.common.constant.ErrorCode;
 import com.ibiz.mq.common.message.Message;
+import com.ibiz.mq.common.util.RuntimeError;
 import com.ibiz.mq.common.util.StringUtil;
+import com.ibiz.mq.common.util.ValidateUtil;
 import com.ibiz.redis.mq.config.RedisConfig;
 import com.ibiz.redis.mq.constant.Constant;
 import com.ibiz.redis.mq.script.ScriptManager;
@@ -45,7 +48,7 @@ public class JedisClient {
         close(jedis);
     }
 
-    public static byte[] evalsha(String bean, Jedis jedis, byte[]...params) {
+    public static byte[] evalsha(Jedis jedis, byte[]...params) {
         Object result = jedis.evalsha(ScriptManager.getInstance().loadSha(jedis, Constant.LUA_CONSUME), 5, params);
         close(jedis);
         return (byte[])result;
@@ -71,8 +74,8 @@ public class JedisClient {
             try {
                 ping(pool);
             } catch (Exception e) {
-                throw new RuntimeException("redis ping failure hostname :" + instanceConfig.getHostname() + ":" + instanceConfig.getPort() +
-                        " , username:" + instanceConfig.getUserName() + "/" + instanceConfig.getPassword() + ", dbIndex:" + instanceConfig.getDbIndex());
+                RuntimeError.creator("redis ping failure hostname :" + instanceConfig.getHostname() + ":" + instanceConfig.getPort() +
+                        " , username:" + instanceConfig.getUserName() + "/" + instanceConfig.getPassword() + ", dbIndex:" + instanceConfig.getDbIndex(), e);
             }
             return pool;
         }
@@ -101,9 +104,7 @@ public class JedisClient {
         static void ping(Pool<Jedis> pool) {
             Jedis jedis = pool.getResource();
             String ping = jedis.ping();
-            if (!"PONG".equalsIgnoreCase(ping)) {
-                throw new RuntimeException("redis ping failure");
-            }
+            ValidateUtil.validate(ping, (o) -> !StringUtil.equalsIgnoreCase("PONG", o), ErrorCode.COMMON_CODE,"redis ping failure");
             jedis.close();
         }
     }

@@ -2,6 +2,7 @@ package com.ibiz.redis.mq.factory;
 
 import com.ibiz.mq.common.config.ConsumerConfig;
 import com.ibiz.mq.common.config.InstanceConfig;
+import com.ibiz.mq.common.util.RuntimeError;
 import com.ibiz.redis.mq.config.RedisConfig;
 
 public class ConfigFactory {
@@ -10,7 +11,8 @@ public class ConfigFactory {
         if ("redis".equals(type)) {
             return new RedisConfig();
         }
-        throw new RuntimeException("not support mq type :" + type);
+        RuntimeError.creator("not support mq type :" + type);
+        return null;
     }
 
     public static ConsumerConfig getNewConsumerConfig() {

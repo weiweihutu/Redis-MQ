@@ -5,6 +5,7 @@ import com.ibiz.mq.common.constant.ErrorCode;
 import com.ibiz.mq.common.exception.ServiceException;
 import com.ibiz.mq.common.message.Message;
 import com.ibiz.mq.common.serializ.ISerializerHandler;
+import com.ibiz.mq.common.util.RuntimeError;
 import com.ibiz.mq.common.util.ValidateUtil;
 
 import java.io.*;
@@ -23,8 +24,9 @@ public class JdkSerializerHandler implements ISerializerHandler {
             oos.writeObject(message.getBody());
             return baos.toByteArray();
         } catch (IOException e) {
-            throw new ServiceException(ErrorCode.COMMON_CODE.getCode(), "jdk serialize object :" + message.getBody().getClass() + " error", e);
+            RuntimeError.creator( "jdk serialize object :" + message.getBody().getClass() + " error", e);
         }
+        return null;
     }
 
     @Override
@@ -33,19 +35,21 @@ public class JdkSerializerHandler implements ISerializerHandler {
              ObjectInputStream ois = new ObjectInputStream(bais)){
             return Message.MessageBuilder.creator(ois.readObject());
         } catch (Exception e) {
-            throw new ServiceException(ErrorCode.COMMON_CODE.getCode(), "jdk deserialize object :" + clazz.getName() + " error", e);
+            RuntimeError.creator("jdk deserialize object :" + clazz.getName() + " error", e);
         }
+        return null;
     }
 
     @Override
     public String serializer(Message message) {
-        throw new RuntimeException("not support method");
+        RuntimeError.creator( "not support method");
+        return null;
     }
 
     @Override
     public Message deserializer(String str, Class<?> clazz) {
-        throw new RuntimeException("not support method");
+        RuntimeError.creator( "not support method");
+        return null;
     }
-
 
 }

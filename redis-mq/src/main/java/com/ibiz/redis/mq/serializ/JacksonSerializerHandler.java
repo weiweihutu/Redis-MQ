@@ -6,6 +6,7 @@ import com.ibiz.mq.common.constant.ErrorCode;
 import com.ibiz.mq.common.exception.ServiceException;
 import com.ibiz.mq.common.message.Message;
 import com.ibiz.mq.common.serializ.ISerializerHandler;
+import com.ibiz.mq.common.util.RuntimeError;
 import com.ibiz.mq.common.util.ValidateUtil;
 
 import java.io.IOException;
@@ -23,8 +24,9 @@ public class JacksonSerializerHandler implements ISerializerHandler {
         try {
             return MAPPER.writeValueAsBytes(message.getBody());
         } catch (JsonProcessingException e) {
-            throw new ServiceException(ErrorCode.COMMON_CODE.getCode(), "jackson serialize object :" + message.getBody().getClass() + " error", e);
+            RuntimeError.creator( "jackson serialize object :" + message.getBody().getClass() + " error", e);
         }
+        return null;
     }
 
     @Override
@@ -32,18 +34,21 @@ public class JacksonSerializerHandler implements ISerializerHandler {
         try {
             return Message.MessageBuilder.creator(MAPPER.readValue(buf, clazz));
         } catch (IOException e) {
-            throw new ServiceException(ErrorCode.COMMON_CODE.getCode(), "jackson deserialize object :" + clazz.getName() + " error", e);
+            RuntimeError.creator( "jackson deserialize object :" + clazz.getName() + " error", e);
         }
+        return null;
     }
 
     @Override
     public String serializer(Message message) {
-        throw new RuntimeException("not support method");
+        RuntimeError.creator( "not support method");
+        return null;
     }
 
     @Override
     public Message deserializer(String str, Class<?> clazz) {
-        throw new RuntimeException("not support method");
+        RuntimeError.creator( "not support method");
+        return null;
     }
 
 

@@ -5,6 +5,7 @@ import com.ibiz.mq.common.exception.ServiceException;
 import com.ibiz.mq.common.message.Message;
 import com.ibiz.mq.common.serializ.ISerializerHandler;
 import com.ibiz.mq.common.util.ClassUtil;
+import com.ibiz.mq.common.util.RuntimeError;
 import com.ibiz.mq.common.util.ValidateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +28,9 @@ public class ProtobufSerializerHandler implements ISerializerHandler {
             Method method = clazz.getMethod("toByteArray");
             return (byte[])method.invoke(message.getBody());
         } catch (Exception e) {
-            logger.error("serializer class :" + message.getClazz() +" error ,", e);
-            throw new ServiceException(ErrorCode.COMMON_CODE.getCode(), "serializer class error", e);
+            RuntimeError.creator( "Protobuf serializer class :" + message.getClazz() +" error ,", e);
         }
+        return null;
     }
 
     @Override
@@ -41,8 +42,9 @@ public class ProtobufSerializerHandler implements ISerializerHandler {
             Object obj = parseFrom.invoke(clazz, buf);
             return Message.MessageBuilder.creator(obj);
         } catch (Exception e) {
-            throw new ServiceException(ErrorCode.COMMON_CODE.getCode(), "deserializer class " + clazz.getName() +" error", e);
+            RuntimeError.creator("Protobuf deserializer class " + clazz.getName() +" error", e);
         }
+        return null;
     }
 
     @Override
