@@ -1,16 +1,56 @@
-### 如何提高吞吐量？
 
-Redis-MQ采用线程池管理机制，在针对每个不同业务点的特殊性，例如业务需要频繁IO,或者调用第三方服务，亦或是业务很简单。配置不同配置的线程池。
 
 ## Redis-MQ介绍
 
 与第三方中间件消息通讯会占用部分系统资源，并且第三方会启动很多额外的功能，例如启动守护线程监听MQ的消费情况等，这些都会占用系统资源。因此写一套能够支持MQ机制的组件
 
-支持配置多个redis实例 ， 配置多个消费者。
+支持配置多个redis实例 ， 配置多个消费者。实例与消费者多对多关系
 
-一个redis实例可以对应多个消费者。
+![redis-MQ](image\redis-MQ-2.png)
 
-一个消费者也可以对应到不同redis实例。
+## SPI
+
+功能均是通过实现已定义的接口进行完成。
+
+com.ibiz.mq.common.consumer.IConsumer	文件名(接口)
+
+​	redis=com.ibiz.redis.mq.consumer.RedisConsumer （bean名称 - 实现类）
+
+com.ibiz.mq.common.lifecycle.Lifecycle
+
+​	redis=com.ibiz.redis.mq.lifecycle.RedisLifecycle
+
+```java
+ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
+        ISerializerHandler serializerHandler = (ISerializerHandler)extensionLoader.getInstance(serialize,"protobuf");
+        Message message = serializerHandler.deserializer(buf, messageBodyClass);
+```
+
+## 配置项
+
+```properties
+#redis 标识使用redisMQ
+#mq-config-consumer 消费者必须配置
+#userInfoConsumerHandler 消费者id
+#instanceId 消费者对应生产者实例id , 这里instanceId=m2 对应redis-mq-config-instance.m2
+#corePoolSize 消费者Work线程池核心线程数
+#maximumPoolSize 消费者Work线程池最大线程数
+#queueSize 消费者Work线程池最大容量
+#serializer 序列化方式 支持 gson jdk protobuf jackson
+#strategy 消费策略 (最多任务先消费,最少任务先消费)
+redis-mq-config-consumer.userInfoConsumerHandler={instanceId:"m2",bean:"userInfoConsumerHandler",corePoolSize:5,maximumPoolSize:10,queueSize:100,strategy:"MORE_FIRST",serializer:"gson"}
+#redis 标识使用redisMQ
+#mq-config-instance  实例必须配置
+#m2 实例id, 用户任意配置,作用(消费者通过instanceId与实例绑定)
+#hostname...等  redis相关配置
+redis-mq-config-instance.m2={hostname:"192.168.131.101",port:6379,timeout:3000,usePool:true,dbIndex:0,maxTotal:500,maxIdle:20,timeBetweenEvictionRunsMillis:30000,minEvictableIdleTimeMillis:30000,maxWaitMillis:5000,testOnCreate:true,testOnBorrow:false,testOnReturn:true,testWhileIdle:true,sentinel:false,sentinelMasterName:"sentinelMaster",sentinels:["127.0.0.1:6378","127.0.0.1:6379"]}
+```
+
+### 如何提高吞吐量？
+
+Redis-MQ采用线程池管理机制，根据不同业务点的特殊性，例如简易业务，频繁IO,调用第三方服务，配置不同的线程池。已达到最大消化率。
+
+### 模型
 
 ![redis-MQ](image\redis-MQ.png)
 
@@ -118,11 +158,17 @@ status使用AtomicBoolean是为了解决同步问题。
 
 然后关闭WORK线程池
 
-Protobuf
-安装protobuf程序
-https://github.com/protocolbuffers/protobuf/releases
-1.设置环境变量
-2.编写实体proto文件
+## 序列化反序列化
+
+支持protobuf , gson, jackon, jdk 四种机制
+
+ Protobuf
+
+> 安装protobuf程序
+> https://github.com/protocolbuffers/protobuf/releases
+> 1.设置环境变量
+> 2.编写实体proto文件
+
 ```java
 syntax = "proto2";  //使用proto2
 import "DefineMap.proto"; //导入其他proto
@@ -143,14 +189,14 @@ message User {
   optional string name = 6;
 }
 ```
-3.编译proto
-protoc --proto_path=. --java_out=E:\workspace\spring-execrise\redis-mq-x\src\main\java User.proto
+> 3.编译proto
+> protoc --proto_path=. --java_out=E:\workspace\spring-execrise\redis-mq-x\src\main\java User.proto
 
-4.将生成的java类放入对应包下
+> 4.将生成的java类放入对应包下
 
-jdk, jackson, gson, protobuf 序列化
+#### JDK
 
-1、JDK 序列化实体必须实现Serializable。jdk的序列化时会把实体的所有信息，包括超类，属性已经属性的超类均写入字节流中。在反序列化中根据这些数据进行反序列化
+JDK 序列化实体必须实现Serializable。jdk的序列化时会把实体的所有信息，包括超类，属性已经属性的超类均写入字节流中。在反序列化中根据这些数据进行反序列化
 
 2、protobuf序列化采用二进制,时间和空间上比GSON占优势。但是当对象中中文字符比较多，空间比GSON更多
 protobuf序列化完成后，在反序列化需要知道具体类型才能进行反序列化。
@@ -158,9 +204,13 @@ protobuf序列化完成后，在反序列化需要知道具体类型才能进行
     1 在序列化时记录下原始类型，反序列化时通过反射调用反序列化方法进行（本MQ使用这种）
     2 结构相同的proto类也能反序列化生成对应(优点：消费者无需依赖生产者的实体。只要结构相同即可)
 
-3、GSON序列化对象，简单对象时没问题。复杂对象例如集合，反序列化时无法为嵌套对象的属性设置值
+#### GSON
 
-4、Jackson序列化对象，序列化后占空间比gson大，但是序列化耗时最低，反序列化耗时比gson略高
+GSON序列化对象，简单对象时没问题。复杂对象例如集合，反序列化时无法为嵌套对象的属性设置值
+
+#### Jackson
+
+Jackson序列化对象，序列化后占空间比gson大，但是序列化耗时最低，反序列化耗时比gson略高
 
 下面是三种序列化已经反序列化占比和耗时。可以看出protobuf性能最优，空间小而且耗时短。缺点是反序列化时需要知道类型
 
