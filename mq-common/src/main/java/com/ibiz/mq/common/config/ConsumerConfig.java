@@ -19,7 +19,7 @@ public class ConsumerConfig {
     private int queueSize;
     private String id;
     private long sleep = 500L;
-    private String serializer = "jdk";
+    private String serializer = "gson";
     /**默认使用最多待消费任务优先*/
     private StrategyType strategy = StrategyType.MORE_FIRST;
 

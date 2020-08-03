@@ -12,9 +12,8 @@ import com.ibiz.redis.mq.factory.LifecycleFactory;
 import com.ibiz.redis.mq.lifecycle.RedisLifecycle;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Tuple;
-import redis.clients.util.Pool;
+import redis.clients.jedis.util.Pool;
 
 import java.lang.reflect.Field;
 import java.util.Set;

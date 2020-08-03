@@ -22,7 +22,7 @@
         <junit.junit.version>4.13</junit.junit.version>
         <com.google.guava.guava.version>25.1-jre</com.google.guava.guava.version>
         <com.google.protobuf.protobuf-java.version>3.12.2</com.google.protobuf.protobuf-java.version>
-        <redis.clients.jedis.version>2.9.0</redis.clients.jedis.version>
+        <redis.clients.jedis.version>3.3.0</redis.clients.jedis.version>
         <com.fasterxml.jackson.core.jackson-databind.version>2.9.8</com.fasterxml.jackson.core.jackson-databind.version>
     </properties>
 

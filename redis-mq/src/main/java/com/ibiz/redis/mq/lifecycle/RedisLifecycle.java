@@ -10,8 +10,7 @@ import com.ibiz.redis.mq.thread.BossThreadManager;
 import com.ibiz.redis.mq.thread.WorkThreadPoolManager;
 import com.ibiz.redis.mq.client.JedisClient;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.util.Pool;
+import redis.clients.jedis.util.Pool;
 
 /**
  * @auther yc

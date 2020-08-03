@@ -21,7 +21,7 @@ public class WorkThread implements Runnable {
 
     @Override
     public void run() {
-        logger.info("instanceId:{} work thread running", consumerConfig.getInstanceId());
+        logger.debug("instanceId:{} work thread running", consumerConfig.getInstanceId());
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(IConsumer.class);
         IConsumer consumer = (IConsumer) extensionLoader.getInstance(consumerConfig.getProtocol());
         logger.debug("instanceId:{} work thread running consumerConfig:{}", consumerConfig.getInstanceId(), consumerConfig);

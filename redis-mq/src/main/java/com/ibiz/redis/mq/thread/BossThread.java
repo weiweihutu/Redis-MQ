@@ -7,6 +7,7 @@ import com.ibiz.redis.mq.context.InstanceHolder;
 import com.ibiz.redis.mq.lifecycle.RedisLifecycle;
 import com.ibiz.redis.mq.topic.Topic;
 import com.ibiz.redis.mq.topic.TopicHandler;
+import com.ibiz.redis.mq.utils.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,9 @@ public class BossThread implements Runnable {
     public BossThread(ConsumerConfig consumerConfig) {
         this.consumerConfig = consumerConfig;
     }
+    public String getName() {
+        return consumerConfig.getInstanceId() + "_boss_thread[consumer:" + consumerConfig.getId() + "]_" + consumerConfig.getBean() + "_" + DateUtil.formatterNowTime();
+    }
     @Override
     public void run() {
         //mq 实例id
@@ -28,9 +32,8 @@ public class BossThread implements Runnable {
         logger.info("instanceId : {} consumer : {} start ", instanceId, consumerConfig);
         while (isRunning.get()) {
             try {
-                logger.info("BOSS THREAD RUN ................");
+                logger.debug("BOSS THREAD RUN ................");
                 //消费者id
-                final String id = consumerConfig.getId();
                 DefineThreadPoolExecutor pte = WorkThreadPoolManager.getInstance().createExecutor(consumerConfig);
                 Lifecycle lifecycle = InstanceHolder.getInstanceHolder().getLifecycle(instanceId);
                 //此处可以使用抽象方法扩展其他mq类型,让子类去执行

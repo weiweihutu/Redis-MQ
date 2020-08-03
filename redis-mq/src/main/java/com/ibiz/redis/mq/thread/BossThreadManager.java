@@ -43,7 +43,7 @@ public class BossThreadManager {
         lock.lock();
         try {
             BOSS_RUNNABLE_MANAGER.put(consumerId, bossThread);
-            BOSS_THREAD_MANAGER.put(consumerId, new Thread(bossThread));
+            BOSS_THREAD_MANAGER.put(consumerId, new Thread(bossThread, bossThread.getName()));
             Set<String> consumerIds = INSTANCE_CONSUMER_MANAGER.getOrDefault(instanceId, new HashSet<>());
             consumerIds.add(consumerId);
             INSTANCE_CONSUMER_MANAGER.put(instanceId, consumerIds);
