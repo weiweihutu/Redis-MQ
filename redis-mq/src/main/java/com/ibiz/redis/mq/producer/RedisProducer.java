@@ -1,6 +1,8 @@
 package com.ibiz.redis.mq.producer;
 
 import com.ibiz.mq.common.ExtensionLoader;
+import com.ibiz.mq.common.constant.ErrorCode;
+import com.ibiz.mq.common.exception.ServiceException;
 import com.ibiz.mq.common.message.Message;
 import com.ibiz.mq.common.producer.IProducer;
 import com.ibiz.mq.common.serializ.ISerializerHandler;
@@ -26,25 +28,30 @@ public class RedisProducer implements IProducer {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @Override
     public void publisher(String instanceId, String bean, String businessKey, String serialize, Message message) {
-        RedisLifecycle lifecycle = (RedisLifecycle)InstanceHolder.getInstanceHolder().getLifecycle(instanceId);
-        if (Objects.isNull(lifecycle)) {
-            throw new RuntimeException("mq instanceId:" + instanceId + " not exist");
+        try {
+            RedisLifecycle lifecycle = (RedisLifecycle)InstanceHolder.getInstanceHolder().getLifecycle(instanceId);
+            if (Objects.isNull(lifecycle)) {
+                throw new RuntimeException("mq instanceId:" + instanceId + " not exist");
+            }
+            logger.debug("instanceId:{}, bean:{}, businessKey:{} publisher", instanceId, bean, businessKey);
+            bean = Constant.REDIS_KEY_PREFIX + bean;
+            Jedis jedis = lifecycle.getJedis();
+            String topic = bean + "_" + businessKey;
+            String messageCLazz = topic + REDIS_KEY_MESSAGE_CLAZZ_SUFFIX;
+            List<byte[]> keys = Arrays.asList(toByteUtf8(bean),
+                    toByteUtf8(topic), toByteUtf8(REDIS_MQ_EVERY_PRODUCE_PULL_QUEUE_QUANTITY),
+                    toByteUtf8(REDIS_MQ_TOTAL_PRODUCE_PULL_QUEUE_QUANTITY),
+                    toByteUtf8(REDIS_MQ_TOTAL_PRODUCE_PULL_QUANTITY_TIME),
+                    toByteUtf8(messageCLazz),
+                    toByteUtf8(message.getClazz()));
+            ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
+            ISerializerHandler serializer = (ISerializerHandler)extensionLoader.getInstance(serialize,"protobuf");
+            byte[] messageByte = serializer.serializerAsByteArray(message);
+            JedisClient.evalSha(instanceId, message, jedis, topic, keys, messageByte);
+        } catch (RuntimeException e) {
+            logger.error("producer task error", e);
+            throw e;
         }
-        logger.debug("instanceId:{}, bean:{}, businessKey:{} publisher", instanceId, bean, businessKey);
-        bean = Constant.REDIS_KEY_PREFIX + bean;
-        Jedis jedis = lifecycle.getJedis();
-        String topic = bean + "_" + businessKey;
-        String messageCLazz = topic + REDIS_KEY_MESSAGE_CLAZZ_SUFFIX;
-        List<byte[]> keys = Arrays.asList(toByteUtf8(bean),
-                toByteUtf8(topic), toByteUtf8(REDIS_MQ_EVERY_PRODUCE_PULL_QUEUE_QUANTITY),
-                toByteUtf8(REDIS_MQ_TOTAL_PRODUCE_PULL_QUEUE_QUANTITY),
-                toByteUtf8(REDIS_MQ_TOTAL_PRODUCE_PULL_QUANTITY_TIME),
-                toByteUtf8(messageCLazz),
-                toByteUtf8(message.getClazz()));
-        ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
-        ISerializerHandler serializer = (ISerializerHandler)extensionLoader.getInstance(serialize,"protobuf");
-        byte[] messageByte = serializer.serializerAsByteArray(message);
-        JedisClient.evalSha(instanceId, message, jedis, topic, keys, messageByte);
     }
 
 

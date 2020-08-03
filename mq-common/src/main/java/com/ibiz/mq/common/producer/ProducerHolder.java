@@ -3,7 +3,11 @@ package com.ibiz.mq.common.producer;
 
 import com.ibiz.mq.common.ExtensionLoader;
 import com.ibiz.mq.common.config.ConsumerConfig;
+import com.ibiz.mq.common.constant.ErrorCode;
+import com.ibiz.mq.common.exception.ServiceException;
 import com.ibiz.mq.common.message.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 生产者接口
@@ -11,6 +15,7 @@ import com.ibiz.mq.common.message.Message;
  * @date 2020/7/229:30
  */
 public class ProducerHolder {
+    private static final Logger logger = LoggerFactory.getLogger(ProducerHolder.class);
     /**
      * config#bean作为一个group
      * config#bean_businessKey作为一个topic
@@ -26,6 +31,11 @@ public class ProducerHolder {
         String protocol = config.getProtocol();
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(IProducer.class);
         IProducer producer = (IProducer) extensionLoader.getInstance(protocol);
-        producer.publisher(instanceId, config.getBean(), businessKey, config.getSerializer(), message);
+        try {
+            producer.publisher(instanceId, config.getBean(), businessKey, config.getSerializer(), message);
+        } catch (Exception e) {
+            logger.error("producer task error", e);
+            throw new ServiceException(ErrorCode.PRODUCE_ERROR, e);
+        }
     }
 }

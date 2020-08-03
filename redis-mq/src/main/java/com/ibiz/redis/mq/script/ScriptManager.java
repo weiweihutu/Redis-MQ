@@ -55,7 +55,7 @@ public class ScriptManager {
 
     public String loadScript(String scriptName) {
         String script = SCRIPT_CACHE.get(scriptName);
-        if (StringUtil.isNotBlank(script)) {
+        if (StringUtil.isBlank(script)) {
             ClassPathResource cpr = new ClassPathResource(Constant.LUA_SCRIPT_ROOT_PATH + scriptName);
             //重新加载
             try {

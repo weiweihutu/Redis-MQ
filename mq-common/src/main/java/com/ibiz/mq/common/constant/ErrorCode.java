@@ -1,7 +1,9 @@
 package com.ibiz.mq.common.constant;
 
 public enum ErrorCode {
-    COMMON_CODE("9999", "公共错误");
+    COMMON_CODE("9999", "公共错误"),
+
+    PRODUCE_ERROR("1000","发布任务异常");
     private String code;
     private String message;
     ErrorCode(String code, String message) {

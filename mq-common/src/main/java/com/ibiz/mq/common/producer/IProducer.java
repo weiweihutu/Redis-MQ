@@ -1,5 +1,6 @@
 package com.ibiz.mq.common.producer;
 
+import com.ibiz.mq.common.exception.ServiceException;
 import com.ibiz.mq.common.message.Message;
 
 /**

@@ -32,7 +32,7 @@ public class BossThread implements Runnable {
         logger.info("instanceId : {} consumer : {} start ", instanceId, consumerConfig);
         while (isRunning.get()) {
             try {
-                logger.debug("BOSS THREAD RUN ................");
+                logger.info("BOSS THREAD RUN ................");
                 //消费者id
                 DefineThreadPoolExecutor pte = WorkThreadPoolManager.getInstance().createExecutor(consumerConfig);
                 Lifecycle lifecycle = InstanceHolder.getInstanceHolder().getLifecycle(instanceId);

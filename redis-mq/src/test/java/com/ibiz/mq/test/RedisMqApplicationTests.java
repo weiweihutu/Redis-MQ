@@ -8,6 +8,7 @@ import com.ibiz.mq.common.message.Message;
 import com.ibiz.mq.common.producer.IProducer;
 import com.ibiz.redis.mq.config.Config;
 import com.ibiz.redis.mq.context.SpringContextHolder;
+import com.ibiz.redis.mq.domain.UserModel;
 import com.ibiz.redis.mq.domain.UserProto;
 import com.ibiz.redis.mq.producer.ProducerDemo;
 import com.ibiz.redis.mq.thread.DefineThreadPoolExecutor;
@@ -36,7 +37,7 @@ class RedisMqApplicationTests {
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                producer(10000);
+                producer(100);
             }
         }, 10000);
         //cxt.refresh();
@@ -60,7 +61,8 @@ class RedisMqApplicationTests {
         ConsumerConfig consumerConfig = MQConfig.CONSUMER_CONFIG.get("test");
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(IProducer.class);
         IProducer producer = (IProducer) extensionLoader.getInstance(consumerConfig.getProtocol());
-        UserProto.User user = UserFactory.getUser();
+        //UserProto.User user = UserFactory.getUser();
+        UserModel user = UserFactory.getJdkUser();
         Message message = new Message();
         message.setBody(user);
         ProducerDemo.start = new Date();
