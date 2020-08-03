@@ -19,7 +19,7 @@ import java.util.Objects;
 public class JacksonSerializerHandler implements ISerializerHandler {
     private final static ObjectMapper MAPPER = new ObjectMapper();
     @Override
-    public byte[] serializerAsByteArray(Message message) {
+    public byte[] serializer(Message message) {
         ValidateUtil.validate(message.getBody(), Objects::isNull, ErrorCode.COMMON_CODE, "obj is null");
         try {
             return MAPPER.writeValueAsBytes(message.getBody());
@@ -30,7 +30,7 @@ public class JacksonSerializerHandler implements ISerializerHandler {
     }
 
     @Override
-    public Message deserializerForByteArray(byte[] buf, Class<?> clazz) {
+    public Message deserializer(byte[] buf, Class<?> clazz) {
         try {
             return Message.MessageBuilder.creator(MAPPER.readValue(buf, clazz));
         } catch (IOException e) {
@@ -38,18 +38,5 @@ public class JacksonSerializerHandler implements ISerializerHandler {
         }
         return null;
     }
-
-    @Override
-    public String serializer(Message message) {
-        RuntimeError.creator( "not support method");
-        return null;
-    }
-
-    @Override
-    public Message deserializer(String str, Class<?> clazz) {
-        RuntimeError.creator( "not support method");
-        return null;
-    }
-
 
 }

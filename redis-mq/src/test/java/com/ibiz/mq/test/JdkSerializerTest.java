@@ -26,8 +26,8 @@ public class JdkSerializerTest {
         message.setBody(user);
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
         ISerializerHandler protobuf = (ISerializerHandler)extensionLoader.getInstance(serialize);
-        byte[] buf = protobuf.serializerAsByteArray(message);
-        Message deserializer = protobuf.deserializerForByteArray(buf, UserModel.class);
+        byte[] buf = protobuf.serializer(message);
+        Message deserializer = protobuf.deserializer(buf, UserModel.class);
         System.out.println(message);
         System.out.println(deserializer);
     }

@@ -55,8 +55,8 @@ public class RedisConsumer implements IConsumer {
             return;
         }
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
-        ISerializerHandler protobuf = (ISerializerHandler)extensionLoader.getInstance(serialize,"protobuf");
-        Message message = protobuf.deserializerForByteArray(buf, messageBodyClass);
+        ISerializerHandler serializerHandler = (ISerializerHandler)extensionLoader.getInstance(serialize,"protobuf");
+        Message message = serializerHandler.deserializer(buf, messageBodyClass);
         logger.info("instanceId :{} rpop produce topic :{} , messageCLass:{}", instanceId, topic, message.getClazz());
         try {
             invoke.invoke(message);

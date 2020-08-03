@@ -46,7 +46,7 @@ public class RedisProducer implements IProducer {
                     toByteUtf8(message.getClazz()));
             ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
             ISerializerHandler serializer = (ISerializerHandler)extensionLoader.getInstance(serialize,"protobuf");
-            byte[] messageByte = serializer.serializerAsByteArray(message);
+            byte[] messageByte = serializer.serializer(message);
             JedisClient.evalSha(instanceId, message, jedis, topic, keys, messageByte);
         } catch (RuntimeException e) {
             logger.error("producer task error", e);

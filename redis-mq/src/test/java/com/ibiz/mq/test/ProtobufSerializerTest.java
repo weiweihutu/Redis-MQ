@@ -27,8 +27,8 @@ public class ProtobufSerializerTest {
         message.setBody(user);
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
         ISerializerHandler protobuf = (ISerializerHandler)extensionLoader.getInstance("protobuf");
-        byte[] buff = protobuf.serializerAsByteArray(message);
-        Message message1 = protobuf.deserializerForByteArray(buff, UserProto.User.class);
+        byte[] buff = protobuf.serializer(message);
+        Message message1 = protobuf.deserializer(buff, UserProto.User.class);
         System.out.println(message);
         System.out.println(message1);
     }
@@ -62,7 +62,7 @@ public class ProtobufSerializerTest {
         List<byte[]> byts = new ArrayList<>();
         long start = System.currentTimeMillis();
         IntStream.range(0, range).forEach(i -> {
-            byte[] bytes = protobuf.serializerAsByteArray(message);
+            byte[] bytes = protobuf.serializer(message);
             byts.add(bytes);
             long length = cost.getOrDefault("protobuf_serialize_size", 0L);
             length += (long)bytes.length;
@@ -74,7 +74,7 @@ public class ProtobufSerializerTest {
         time += (end - start);
         cost.put("protobuf_serialize", time);
         byts.forEach(b -> {
-            protobuf.deserializerForByteArray(b, UserProto.User.class);
+            protobuf.deserializer(b, UserProto.User.class);
             /*JsonFormat jsonFormat = new JsonFormat();
             String json = jsonFormat.printToString(user1);
             System.out.println(">>>>>>>>>>>>>>>>" + json);*/
@@ -93,7 +93,7 @@ public class ProtobufSerializerTest {
         List<String> list = new ArrayList<>();
         long start = System.currentTimeMillis();
         IntStream.range(0, range).forEach(i -> {
-            String str = protobuf.serializer(message);
+            String str = new String(protobuf.serializer(message));
             list.add(str);
             long length = cost.getOrDefault("gson_serialize_size", 0L);
             length += (long)str.length();
@@ -104,7 +104,7 @@ public class ProtobufSerializerTest {
         time += (end - start);
         cost.put("gson_serialize", time);
         list.forEach(b -> {
-            Message message1 = protobuf.deserializer(b, Message.class);
+            Message message1 = protobuf.deserializer(b.getBytes(), Message.class);
         });
         long deTime = cost.getOrDefault("gson_deserialize", 0L);
         long end2 = System.currentTimeMillis();
@@ -120,7 +120,7 @@ public class ProtobufSerializerTest {
         List<byte[]> byts = new ArrayList<>();
         long start = System.currentTimeMillis();
         IntStream.range(0, range).forEach(i -> {
-            byte[] bytes = protobuf.serializerAsByteArray(message);
+            byte[] bytes = protobuf.serializer(message);
             byts.add(bytes);
             long length = cost.getOrDefault("jdk_serialize_size", 0L);
             length += bytes.length;
@@ -131,7 +131,7 @@ public class ProtobufSerializerTest {
         time += (end - start);
         cost.put("jdk_serialize", time);
         byts.forEach(b -> {
-            Message deserializer = protobuf.deserializerForByteArray(b, UserModel.class);
+            Message deserializer = protobuf.deserializer(b, UserModel.class);
         });
         long deTime = cost.getOrDefault("jdk_deserialize", 0L);
         long end2 = System.currentTimeMillis();
@@ -147,7 +147,7 @@ public class ProtobufSerializerTest {
         List<byte[]> byts = new ArrayList<>();
         long start = System.currentTimeMillis();
         IntStream.range(0, range).forEach(i -> {
-            byte[] bytes = protobuf.serializerAsByteArray(message);
+            byte[] bytes = protobuf.serializer(message);
             byts.add(bytes);
             long length = cost.getOrDefault("jackson_serialize_size", 0L);
             length += bytes.length;
@@ -158,7 +158,7 @@ public class ProtobufSerializerTest {
         time += (end - start);
         cost.put("jackson_serialize", time);
         byts.forEach(b -> {
-            Message deserializer = protobuf.deserializerForByteArray(b, UserModel.class);
+            Message deserializer = protobuf.deserializer(b, UserModel.class);
         });
         long deTime = cost.getOrDefault("jackson_deserialize", 0L);
         long end2 = System.currentTimeMillis();

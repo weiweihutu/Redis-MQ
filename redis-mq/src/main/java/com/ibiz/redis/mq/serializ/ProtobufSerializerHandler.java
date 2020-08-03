@@ -21,7 +21,7 @@ public class ProtobufSerializerHandler implements ISerializerHandler {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public byte[] serializerAsByteArray(Message message) {
+    public byte[] serializer(Message message) {
         ValidateUtil.validate(message.getBody(), Objects::isNull, ErrorCode.COMMON_CODE, "obj is null");
         try {
             Class<?> clazz = ClassUtil.getClass(message.getClazz());
@@ -34,7 +34,7 @@ public class ProtobufSerializerHandler implements ISerializerHandler {
     }
 
     @Override
-    public Message deserializerForByteArray(byte[] buf, Class<?> clazz) {
+    public Message deserializer(byte[] buf, Class<?> clazz) {
         ValidateUtil.validate(buf, Objects::isNull, ErrorCode.COMMON_CODE, "buf is null");
         ValidateUtil.validate(clazz, Objects::isNull, ErrorCode.COMMON_CODE, "clazz is null");
         try {
@@ -45,16 +45,6 @@ public class ProtobufSerializerHandler implements ISerializerHandler {
             RuntimeError.creator("Protobuf deserializer class " + clazz.getName() +" error", e);
         }
         return null;
-    }
-
-    @Override
-    public String serializer(Message message) {
-        throw new RuntimeException("not support method");
-    }
-
-    @Override
-    public Message deserializer(String str, Class<?> clazz) {
-        throw new RuntimeException("not support method");
     }
 
 }

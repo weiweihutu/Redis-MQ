@@ -17,7 +17,7 @@ import java.util.Objects;
  */
 public class JdkSerializerHandler implements ISerializerHandler {
     @Override
-    public byte[] serializerAsByteArray(Message message) {
+    public byte[] serializer(Message message) {
         ValidateUtil.validate(message.getBody(), Objects::isNull, ErrorCode.COMMON_CODE, "obj is null");
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(baos)){
@@ -30,25 +30,13 @@ public class JdkSerializerHandler implements ISerializerHandler {
     }
 
     @Override
-    public Message deserializerForByteArray(byte[] buf, Class<?> clazz) {
+    public Message deserializer(byte[] buf, Class<?> clazz) {
         try (ByteArrayInputStream bais = new ByteArrayInputStream(buf);
              ObjectInputStream ois = new ObjectInputStream(bais)){
             return Message.MessageBuilder.creator(ois.readObject());
         } catch (Exception e) {
             RuntimeError.creator("jdk deserialize object :" + clazz.getName() + " error", e);
         }
-        return null;
-    }
-
-    @Override
-    public String serializer(Message message) {
-        RuntimeError.creator( "not support method");
-        return null;
-    }
-
-    @Override
-    public Message deserializer(String str, Class<?> clazz) {
-        RuntimeError.creator( "not support method");
         return null;
     }
 

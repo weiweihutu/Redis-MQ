@@ -15,27 +15,17 @@ import java.util.Objects;
  */
 public class GsonSerializerHandler implements ISerializerHandler {
     @Override
-    public byte[] serializerAsByteArray(Message message) {
-        return serializer(message).getBytes();
-    }
-
-    @Override
-    public Message deserializerForByteArray(byte[] buf, Class<?> clazz) {
-        String json = new String(buf);
-        return deserializer(json, clazz);
-    }
-
-    @Override
-    public String serializer(Message message) {
+    public byte[] serializer(Message message) {
         ValidateUtil.validate(message.getBody(), Objects::isNull, ErrorCode.COMMON_CODE, "obj is null");
-        return GsonUtil.getGsonInstance().toJson(message.getBody());
+        return GsonUtil.getGsonInstance().toJson(message.getBody()).getBytes();
     }
 
     @Override
-    public Message deserializer(String str, Class<?> clazz) {
-        ValidateUtil.validate(str, (o) -> Objects.isNull(o) || "".equals(o.trim()), ErrorCode.COMMON_CODE, "str is null");
+    public Message deserializer(byte[] buf, Class<?> clazz) {
+        String json = new String(buf);
+        ValidateUtil.validate(json, (o) -> Objects.isNull(o) || "".equals(o.trim()), ErrorCode.COMMON_CODE, "str is null");
         ValidateUtil.validate(clazz, Objects::isNull, ErrorCode.COMMON_CODE, "clazz is null");
-        Object t = GsonUtil.getGsonInstance().fromJson(str, clazz);
+        Object t = GsonUtil.getGsonInstance().fromJson(json, clazz);
         return Message.MessageBuilder.creator(t);
     }
 

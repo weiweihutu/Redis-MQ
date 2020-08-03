@@ -24,8 +24,8 @@ public class GsonSerializerTest {
         message.setBody(user);
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
         ISerializerHandler protobuf = (ISerializerHandler)extensionLoader.getInstance("gson");
-        String serializer = protobuf.serializer(message);
-        Message deserializer = protobuf.deserializer(serializer, UserModel.class);
+        String serializer = new String(protobuf.serializer(message));
+        Message deserializer = protobuf.deserializer(serializer.getBytes(), UserModel.class);
         System.out.println(message);
         System.out.println(deserializer);
     }
@@ -40,8 +40,8 @@ public class GsonSerializerTest {
         msg.setBody(map1);
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
         ISerializerHandler protobuf = (ISerializerHandler)extensionLoader.getInstance("gson");
-        byte[] buff2 = protobuf.serializerAsByteArray(msg);
-        Message msg2 = protobuf.deserializerForByteArray(buff2, HashMap.class);
+        byte[] buff2 = protobuf.serializer(msg);
+        Message msg2 = protobuf.deserializer(buff2, HashMap.class);
         System.out.println(msg);
         System.out.println(msg2);
     }
@@ -57,8 +57,8 @@ public class GsonSerializerTest {
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
         ISerializerHandler protobuf = (ISerializerHandler)extensionLoader.getInstance("gson");
 
-        byte[] buff2 = protobuf.serializerAsByteArray(msg);
-        Message msg2 = protobuf.deserializerForByteArray(buff2, ArrayList.class);
+        byte[] buff2 = protobuf.serializer(msg);
+        Message msg2 = protobuf.deserializer(buff2, ArrayList.class);
         System.out.println(list1);
         System.out.println(msg2);
     }
@@ -74,8 +74,8 @@ public class GsonSerializerTest {
         ExtensionLoader extensionLoader = ExtensionLoader.getServiceLoader(ISerializerHandler.class);
         ISerializerHandler protobuf = (ISerializerHandler)extensionLoader.getInstance("gson");
 
-        byte[] buff2 = protobuf.serializerAsByteArray(msg);
-        Message msg2 = protobuf.deserializerForByteArray(buff2, UserModel[].class);
+        byte[] buff2 = protobuf.serializer(msg);
+        Message msg2 = protobuf.deserializer(buff2, UserModel[].class);
         System.out.println(msg);
         System.out.println(msg2);
     }

@@ -10,11 +10,7 @@ import com.ibiz.mq.common.message.Message;
  */
 public interface ISerializerHandler {
 
-    String serializer(Message message);
+    byte[] serializer(Message message);
 
-    byte[] serializerAsByteArray(Message message);
-
-    Message deserializer(String t, Class<?> clazz);
-
-    Message deserializerForByteArray(byte[] buf, Class<?> clazz);
+    Message deserializer(byte[] buf, Class<?> clazz);
 }
