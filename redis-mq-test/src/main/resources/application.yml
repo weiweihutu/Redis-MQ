@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    username: root
+    password: 111111
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.131.1:3306/tesing?useUnicode=TRUE&characterEncoding=utf-8&serverTimezone=UTC
+    type: com.alibaba.druid.pool.DruidDataSource
+server:
+  port: 22223
+
+#mq.startup.delay: 1000
+#mq.refresh.interval: 600000
+
+#redis-mq-config-consumer.test: {instanceId:"m2",bean:"producer.demo",corePoolSize:5,maximumPoolSize:10,queueSize:100,strategy:"MORE_FIRST"}
+
+#redis-mq-config-instance.m2: {hostname:"192.168.242.101",port:6379,timeout:3000,usePool:true,dbIndex:0,maxTotal:500,maxIdle:20,timeBetweenEvictionRunsMillis:30000,minEvictableIdleTimeMillis:30000,maxWaitMillis:5000,testOnCreate:true,testOnBorrow:false,testOnReturn:true,testWhileIdle:true,sentinel:false,sentinelMasterName:"sentinelMaster",sentinels:["127.0.0.1:6378","127.0.0.1:6379"]}
