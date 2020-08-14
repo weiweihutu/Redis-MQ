@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/1612:30
  */
 public class MQConfig {

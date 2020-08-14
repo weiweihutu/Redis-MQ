@@ -6,7 +6,7 @@ import org.springframework.beans.BeanUtils;
 
 /**
  * mq实例配置
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/1612:31
  */
 public class InstanceConfig {

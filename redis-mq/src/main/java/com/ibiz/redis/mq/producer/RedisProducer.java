@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/229:40
  */
 public class RedisProducer implements IProducer {

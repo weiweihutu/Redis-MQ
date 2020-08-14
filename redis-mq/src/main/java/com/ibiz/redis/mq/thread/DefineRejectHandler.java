@@ -8,7 +8,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * 自定义线程池中记录了提交的任务数,判断是否能继续提交任务并且成功入列
  * 成功入列后要退出
  * 反之休眠等待
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2316:36
  */
 public class DefineRejectHandler implements RejectedExecutionHandler {

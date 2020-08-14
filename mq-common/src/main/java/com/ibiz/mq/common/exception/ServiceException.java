@@ -3,7 +3,7 @@ package com.ibiz.mq.common.exception;
 import com.ibiz.mq.common.constant.ErrorCode;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2718:09
  */
 public class ServiceException extends RuntimeException {

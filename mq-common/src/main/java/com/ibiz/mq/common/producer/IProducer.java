@@ -4,7 +4,7 @@ import com.ibiz.mq.common.exception.ServiceException;
 import com.ibiz.mq.common.message.Message;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/229:39
  */
 public interface IProducer {

@@ -13,7 +13,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.util.Pool;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/1612:43
  */
 public class RedisLifecycle implements Lifecycle {

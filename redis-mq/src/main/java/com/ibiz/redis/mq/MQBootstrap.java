@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2012:24
  */
 public class MQBootstrap {

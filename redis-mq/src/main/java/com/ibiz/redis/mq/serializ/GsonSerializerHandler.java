@@ -10,7 +10,7 @@ import com.ibiz.mq.common.util.ValidateUtil;
 import java.util.Objects;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2414:13
  */
 public class GsonSerializerHandler implements ISerializerHandler {

@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.util.function.Predicate;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2414:37
  */
 public class ValidateUtil {

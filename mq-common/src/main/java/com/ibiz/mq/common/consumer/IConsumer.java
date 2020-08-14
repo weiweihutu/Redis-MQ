@@ -1,7 +1,7 @@
 package com.ibiz.mq.common.consumer;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2219:17
  */
 public interface IConsumer {

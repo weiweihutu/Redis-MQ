@@ -7,7 +7,7 @@ import com.ibiz.redis.mq.domain.UserModel;
 import org.junit.Test;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2715:34
  */
 public class JdkSerializerTest {

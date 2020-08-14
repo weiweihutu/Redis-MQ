@@ -3,7 +3,7 @@ package com.ibiz.mq.common.util;
 import com.google.gson.Gson;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2718:06
  */
 public class GsonUtil {

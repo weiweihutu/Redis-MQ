@@ -6,7 +6,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.beans.BeanUtils;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/1519:08
  */
 public class ConsumerConfig {

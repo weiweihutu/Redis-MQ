@@ -16,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * redis lua脚本管理
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2212:56
  */
 public class ScriptManager {

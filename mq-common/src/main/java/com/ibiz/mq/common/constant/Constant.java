@@ -1,7 +1,7 @@
 package com.ibiz.mq.common.constant;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/1613:03
  */
 public class Constant {

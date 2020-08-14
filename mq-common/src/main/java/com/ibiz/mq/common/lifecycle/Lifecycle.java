@@ -3,7 +3,7 @@ package com.ibiz.mq.common.lifecycle;
 import com.ibiz.mq.common.config.InstanceConfig;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/1612:42
  */
 public interface Lifecycle {

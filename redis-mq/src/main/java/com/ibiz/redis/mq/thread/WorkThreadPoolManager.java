@@ -9,7 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * WORK线程池管理
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2112:37
  */
 public class WorkThreadPoolManager {

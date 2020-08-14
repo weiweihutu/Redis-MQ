@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/1519:11
  */
 public class RedisConfig extends InstanceConfig {

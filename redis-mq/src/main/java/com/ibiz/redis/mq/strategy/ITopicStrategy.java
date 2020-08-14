@@ -9,7 +9,7 @@ import java.util.List;
  *  * 获取到要消费的topic之后，根据score排序
  *  * 根据具体策略再对topic进行排序
  * @see StrategyType
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2319:14
  */
 public interface ITopicStrategy {

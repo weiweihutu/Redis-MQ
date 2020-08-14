@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 生产者接口
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/229:30
  */
 public class ProducerHolder {

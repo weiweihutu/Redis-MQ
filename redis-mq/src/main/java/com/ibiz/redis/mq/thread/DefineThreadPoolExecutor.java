@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 自定义线程池
  *
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2316:28
  */
 public class DefineThreadPoolExecutor extends ThreadPoolExecutor {

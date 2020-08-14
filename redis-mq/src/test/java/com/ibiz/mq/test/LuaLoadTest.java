@@ -5,7 +5,7 @@ import com.ibiz.redis.mq.script.ScriptManager;
 import org.junit.Test;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2217:56
  */
 public class LuaLoadTest {

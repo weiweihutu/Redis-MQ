@@ -1,7 +1,7 @@
 package com.ibiz.mq.common.util;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/1618:55
  */
 public class ClassUtil {

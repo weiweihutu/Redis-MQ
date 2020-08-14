@@ -22,7 +22,7 @@ import static com.ibiz.mq.common.util.StringUtil.toByteUtf8;
 import static com.ibiz.redis.mq.constant.Constant.*;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2219:18
  */
 public class RedisConsumer implements IConsumer {

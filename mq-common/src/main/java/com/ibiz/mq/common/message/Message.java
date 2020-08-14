@@ -3,7 +3,7 @@ package com.ibiz.mq.common.message;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
- * @auther yc
+ * @auther 喻场
  * @date 2020/7/2116:19
  */
 public class Message {
